@@ -75,7 +75,8 @@ enum class XLNT_API sheet_state
 {
     visible,
     hidden,
-    very_hidden
+    very_hidden,
+    page_not_setup,
 };
 
 /// <summary>

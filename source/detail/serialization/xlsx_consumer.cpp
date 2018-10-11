@@ -43,6 +43,8 @@
 #include <detail/serialization/xlsx_consumer.hpp>
 #include <detail/serialization/zstream.hpp>
 
+#include "xlnt/debug/debug.hpp"
+
 namespace std {
 
 /// <summary>
@@ -883,7 +885,7 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
 
             if (count != 0)
             {
-                throw invalid_file("sizes don't match");
+                throw invalid_file("sizes don't match 1");
             }
         }
         else if (current_worksheet_element == qn("spreadsheetml", "phoneticPr")) // CT_PhoneticPr 0-1
@@ -1931,7 +1933,9 @@ void xlsx_consumer::read_shared_string_table()
 
     if (has_unique_count && unique_count != target_.shared_strings().size())
     {
-        throw invalid_file("sizes don't match");
+        XLNT_DEBUG("[WARNING] unique_connt = %lu, target shared size = %lu\n",
+                  unique_count, target_.shared_strings().size());
+        //throw invalid_file("sizes don't match 2");
     }
 }
 

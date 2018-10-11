@@ -888,7 +888,10 @@ void worksheet::sheet_state(xlnt::sheet_state state)
 
 sheet_state worksheet::sheet_state() const
 {
-    return page_setup().sheet_state();
+    if (has_page_setup())
+        return page_setup().sheet_state();
+    else
+        return sheet_state::page_not_setup;
 }
 
 void worksheet::add_column_properties(column_t column, const xlnt::column_properties &props)
