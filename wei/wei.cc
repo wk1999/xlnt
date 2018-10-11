@@ -18,7 +18,6 @@ int write_smpl()
     return 0;
 }
 
-#define NAMEA "GTS IDS GTS 4Q Cadence report- Oct.11.xlsx"
 #include <iostream>
 #include <time.h>
 
@@ -37,13 +36,19 @@ inline std::string str_state(xlnt::sheet_state st)
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
+    if (2 != argc) {
+        std::cout << "please input an excel file as param" << std::endl;
+        return (1);
+    }
+
+    std::string xlsx(argv[1]);
     time_t  start, load_end, read_end;
     xlnt::workbook wb;
     std::cout << "loading..." << std::endl;
     start = time(0);
-    wb.load(NAMEA);
+    wb.load(xlsx);
     load_end = time(0);
 
     // iterate sheet
