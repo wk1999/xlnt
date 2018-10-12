@@ -1376,6 +1376,7 @@ std::size_t workbook::add_shared_string(const rich_text &shared, bool allow_dupl
 
     auto sz = d_->shared_strings_ids_.size();
     d_->shared_strings_ids_[shared] = sz;
+    sz = d_->shared_strings_values_.size();
     d_->shared_strings_values_[sz] = shared;
 
     return sz;

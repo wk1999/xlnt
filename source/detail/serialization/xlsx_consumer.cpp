@@ -1929,7 +1929,7 @@ void xlsx_consumer::read_shared_string_table()
     {
         expect_start_element(qn("spreadsheetml", "si"), xml::content::complex);
         auto rt = read_rich_text(qn("spreadsheetml", "si"), &stats);
-        int id = target_.add_shared_string(rt);
+        int id = target_.add_shared_string(rt, true);
         if (id != expect_id) {
             dup_time++;
             XLNT_DEBUG("[dup %d] expect %d but get id %d\n", dup_time, expect_id, id);
@@ -1947,12 +1947,12 @@ void xlsx_consumer::read_shared_string_table()
     expect_end_element(qn("spreadsheetml", "sst"));
 
     if (has_unique_count && (unique_count != target_.shared_strings().size()
-                          || unique_count != target_.shared_strings_by_id().size()))
+                          && unique_count != target_.shared_strings_by_id().size()))
     {
         XLNT_DEBUG("[WARNING] unique_connt = %lu, target shared size = %lu,"
                    " by id size = %lu\n", unique_count,
                    target_.shared_strings().size(), target_.shared_strings_by_id().size());
-        //throw invalid_file("sizes don't match 2");
+        throw invalid_file("sizes don't match 2");
     }
 }
 
