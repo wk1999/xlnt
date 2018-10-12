@@ -25,6 +25,7 @@
 
 #include <string>
 #include <vector>
+#include <ostream>
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/rich_text_run.hpp>
@@ -118,6 +119,16 @@ public:
     /// Returns true if this text has a single unformatted run with text equal to rhs.
     /// </summary>
     bool operator!=(const std::string &rhs) const;
+
+    void dump(std::ostream & os) const {
+        std::size_t s = runs_.size();
+        for (std::size_t i = 0; i < s; i++) {
+            const rich_text_run & run = runs_[i];
+            os << "[" << int(i+1) << "/" << s << "] ";
+            os << run.first << "(" << run.second.is_set();
+            os << ", " << run.preserve_space << ")\n";
+        }
+    }
 
 private:
     /// <summary>

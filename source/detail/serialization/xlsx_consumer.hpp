@@ -62,6 +62,25 @@ struct worksheet_impl;
 class xlsx_consumer
 {
 public:
+    struct read_rich_text_statistics {
+        int si_times;
+        int line_times;
+        int plaint_text;
+        int run_text;
+        int skip_rph;
+        std::vector<int>    skip_rph_si_time;
+        std::vector<int>    skip_rph_line_time;
+        int skip_phoneticPr;
+        std::vector<int>    skip_phoneticPr_si_time;
+        std::vector<int>    skip_phoneticPr_line_time;
+        int unexpect;
+        std::vector<int>    unexpect_si_time;
+        std::vector<int>    unexpect_line_time;
+        read_rich_text_statistics():si_times(0),line_times(0),
+                plaint_text(0),run_text(0),skip_rph(0),skip_phoneticPr(0),
+                unexpect(0){}
+    };
+public:
 	xlsx_consumer(workbook &destination);
 
 	~xlsx_consumer();
@@ -267,7 +286,7 @@ private:
     /// <summary>
     /// Read a rich text CT_RElt from the document currently being parsed.
     /// </summary>
-    rich_text read_rich_text(const xml::qname &parent);
+    rich_text read_rich_text(const xml::qname &parent, read_rich_text_statistics * stats = 0);
 
     /// <summary>
     /// Returns true if the givent document type represents an XLSX file.

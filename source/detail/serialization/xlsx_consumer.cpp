@@ -1921,20 +1921,37 @@ void xlsx_consumer::read_shared_string_table()
         unique_count = parser().attribute<std::size_t>("uniqueCount");
     }
 
+    read_rich_text_statistics stats;
+    int dup_time = 0;
+    int expect_id = 0;
+
     while (in_element(qn("spreadsheetml", "sst")))
     {
         expect_start_element(qn("spreadsheetml", "si"), xml::content::complex);
-        auto rt = read_rich_text(qn("spreadsheetml", "si"));
-        target_.add_shared_string(rt);
+        auto rt = read_rich_text(qn("spreadsheetml", "si"), &stats);
+        int id = target_.add_shared_string(rt);
+        if (id != expect_id) {
+            dup_time++;
+            XLNT_DEBUG("[dup %d] expect %d but get id %d\n", dup_time, expect_id, id);
+            rt.dump(std::cout);
+        } else {
+            expect_id++;
+        }
         expect_end_element(qn("spreadsheetml", "si"));
     }
+    XLNT_DEBUG("[stats] unique=%lu, si=%d, line=%d, plaint=%d, run=%d, skip_rph=%d"
+            ", skip_pho=%d, unexpect=%d\n", unique_count, stats.si_times,
+            stats.line_times, stats.plaint_text, stats.run_text, stats.skip_rph,
+            stats.skip_phoneticPr, stats.unexpect);
 
     expect_end_element(qn("spreadsheetml", "sst"));
 
-    if (has_unique_count && unique_count != target_.shared_strings().size())
+    if (has_unique_count && (unique_count != target_.shared_strings().size()
+                          || unique_count != target_.shared_strings_by_id().size()))
     {
-        XLNT_DEBUG("[WARNING] unique_connt = %lu, target shared size = %lu\n",
-                  unique_count, target_.shared_strings().size());
+        XLNT_DEBUG("[WARNING] unique_connt = %lu, target shared size = %lu,"
+                   " by id size = %lu\n", unique_count,
+                   target_.shared_strings().size(), target_.shared_strings_by_id().size());
         //throw invalid_file("sizes don't match 2");
     }
 }
@@ -2883,10 +2900,15 @@ void xlsx_consumer::expect_end_element(const xml::qname &name)
     stack_.pop_back();
 }
 
-rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
+rich_text xlsx_consumer::read_rich_text(const xml::qname &parent,
+                                        xlsx_consumer::read_rich_text_statistics * statistics)
 {
     const auto &xmlns = parent.namespace_();
     rich_text t;
+
+    if (statistics) {
+        statistics->si_times++;
+    }
 
     while (in_element(parent))
     {
@@ -2897,10 +2919,16 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
             : false;
         skip_attributes();
         auto text = read_text();
+        if (statistics) {
+            statistics->line_times++;
+        }
 
         if (text_element == xml::qname(xmlns, "t"))
         {
             t.plain_text(text, preserve_space);
+            if (statistics) {
+                statistics->plaint_text++;
+            }
         }
         else if (text_element == xml::qname(xmlns, "r"))
         {
@@ -2989,18 +3017,36 @@ rich_text xlsx_consumer::read_rich_text(const xml::qname &parent)
                 read_text();
             }
 
+            if (statistics) {
+                statistics->run_text++;
+            }
             t.add_run(run);
         }
         else if (text_element == xml::qname(xmlns, "rPh"))
         {
+            if (statistics) {
+                statistics->skip_rph++;
+                statistics->skip_rph_si_time.push_back(statistics->si_times);
+                statistics->skip_rph_line_time.push_back(statistics->line_times);
+            }
             skip_remaining_content(text_element);
         }
         else if (text_element == xml::qname(xmlns, "phoneticPr"))
         {
+            if (statistics) {
+                statistics->skip_phoneticPr++;
+                statistics->skip_phoneticPr_si_time.push_back(statistics->si_times);
+                statistics->skip_phoneticPr_line_time.push_back(statistics->line_times);
+            }
             skip_remaining_content(text_element);
         }
         else
         {
+            if (statistics) {
+                statistics->unexpect++;
+                statistics->unexpect_si_time.push_back(statistics->si_times);
+                statistics->unexpect_line_time.push_back(statistics->line_times);
+            }
             unexpected_element(text_element);
         }
 
