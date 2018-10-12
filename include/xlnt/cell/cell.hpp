@@ -612,6 +612,8 @@ public:
     /// </summary>
     bool operator!=(const cell &comparand) const;
 
+    inline void dump_val(std::ostream & os) const;
+
 private:
     friend class style;
     friend class worksheet;
@@ -695,5 +697,44 @@ std::string cell::value<std::string>() const;
 
 template<>
 rich_text cell::value<rich_text>() const;
+
+inline void cell::dump_val(std::ostream & os) const {
+        type t = data_type();
+        os << "cell(" << column().column_string() << row() << ")";
+        switch (t) {
+            case type::empty:
+                os << " type(empty)";
+                break;
+            case type::boolean:
+                os << " type(bool)";
+                os << " value(" << value<bool>() << ")";
+                break;
+            case type::date:
+                os << " type(date)";
+                //os << " value(" << value<date>() << ")";
+                break;
+            case type::error:
+                os << " type(error)";
+                break;
+            case type::inline_string:
+                os << " type(inline str)";
+                os << " value(" << value<std::string>() << ")";
+                break;
+            case type::number:
+                os << " type(number)";
+                os << " value(" << value<double>() << ")";
+                break;
+            case type::shared_string:
+                os << " type(shared str)";
+                os << " value(" << value<std::string>() << ")";
+                break;
+            case type::formula_string:
+                os << " type(formula)";
+                os << " value(" << value<std::string>() << ")";
+                break;
+            default:;
+        }
+        os << std::endl;
+}
 
 } // namespace xlnt
