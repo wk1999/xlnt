@@ -2738,6 +2738,7 @@ if (ws.has_page_setup()) {
 		}
 	}
 
+#if 0
     if (!hyperlinks.empty())
     {
         write_start_element(xmlns, "hyperlinks");
@@ -2761,6 +2762,7 @@ if (ws.has_page_setup()) {
 
         write_end_element(xmlns, "hyperlinks");
     }
+#endif
 
     if (ws.d_->print_options_.is_set())
     {
