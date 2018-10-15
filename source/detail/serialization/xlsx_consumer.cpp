@@ -737,7 +737,7 @@ void xlsx_consumer::read_worksheet_sheetdata()
 
             auto has_formula = false;
             auto has_shared_formula = false;
-            auto formula_value_string = std::string();
+            formula_t  formula;
 
             while (in_element(qn("spreadsheetml", "c")))
             {
@@ -757,10 +757,20 @@ void xlsx_consumer::read_worksheet_sheetdata()
                         has_shared_formula = parser().attribute("t") == "shared";
                     }
 
+                    if (has_shared_formula) {
+                        formula.is_shared = true;
+                        if (parser().attribute_present("ref")) {
+                            formula.formula_ref = parser().attribute("ref");
+                        }
+                        if (parser().attribute_present("si")) {
+                            formula.formula_shareid = parser().attribute("si");
+                        }
+                    }
+
                     skip_attributes(
                         {"aca", "ref", "dt2D", "dtr", "del1", "del2", "r1", "r2", "ca", "si", "bx"});
 
-                    formula_value_string = read_text();
+                    formula.formula_string = read_text();
                 }
                 else if (current_element == qn("spreadsheetml", "is")) // CT_Rst
                 {
@@ -778,9 +788,9 @@ void xlsx_consumer::read_worksheet_sheetdata()
 
             expect_end_element(qn("spreadsheetml", "c"));
 
-            if (has_formula && !has_shared_formula)
+            if (has_formula)
             {
-                cell.formula(formula_value_string);
+                cell.formula(formula);
             }
 
             if (has_value)
@@ -1921,28 +1931,13 @@ void xlsx_consumer::read_shared_string_table()
         unique_count = parser().attribute<std::size_t>("uniqueCount");
     }
 
-    read_rich_text_statistics stats;
-    int dup_time = 0;
-    int expect_id = 0;
-
     while (in_element(qn("spreadsheetml", "sst")))
     {
         expect_start_element(qn("spreadsheetml", "si"), xml::content::complex);
-        auto rt = read_rich_text(qn("spreadsheetml", "si"), &stats);
-        int id = target_.add_shared_string(rt, true);
-        if (id != expect_id) {
-            dup_time++;
-            XLNT_DEBUG("[dup %d] expect %d but get id %d\n", dup_time, expect_id, id);
-            rt.dump(std::cout);
-        } else {
-            expect_id++;
-        }
+        auto rt = read_rich_text(qn("spreadsheetml", "si"));
+        target_.add_shared_string(rt, true);
         expect_end_element(qn("spreadsheetml", "si"));
     }
-    XLNT_DEBUG("[stats] unique=%lu, si=%d, line=%d, plaint=%d, run=%d, skip_rph=%d"
-            ", skip_pho=%d, unexpect=%d\n", unique_count, stats.si_times,
-            stats.line_times, stats.plaint_text, stats.run_text, stats.skip_rph,
-            stats.skip_phoneticPr, stats.unexpect);
 
     expect_end_element(qn("spreadsheetml", "sst"));
 

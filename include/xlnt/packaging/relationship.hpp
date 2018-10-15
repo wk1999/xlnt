@@ -94,6 +94,58 @@ enum class XLNT_API relationship_type
     image
 };
 
+#define TOSTR(t) \
+    case (relationship_type::t): \
+    return (std::string(#t));
+static inline std::string relationship_tostring(relationship_type type)
+{
+    switch(type)
+    {
+        TOSTR(unknown)
+
+        // Package parts
+        TOSTR(core_properties)
+        TOSTR(extended_properties)
+        TOSTR(custom_properties)
+        TOSTR(office_document)
+        TOSTR(thumbnail)
+        TOSTR(printer_settings)
+
+        // SpreadsheetML parts
+        TOSTR(calculation_chain)
+        TOSTR(chartsheet)
+        TOSTR(comments)
+        TOSTR(connections)
+        TOSTR(custom_property)
+        TOSTR(custom_xml_mappings)
+        TOSTR(dialogsheet)
+        TOSTR(drawings)
+        TOSTR(external_workbook_references)
+        TOSTR(pivot_table)
+        TOSTR(pivot_table_cache_definition)
+        TOSTR(pivot_table_cache_records)
+        TOSTR(query_table)
+        TOSTR(shared_string_table)
+        TOSTR(shared_workbook_revision_headers)
+        TOSTR(shared_workbook)
+        TOSTR(theme)
+        TOSTR(revision_log)
+        TOSTR(shared_workbook_user_data)
+        TOSTR(single_cell_table_definitions)
+        TOSTR(stylesheet)
+        TOSTR(table_definition)
+        TOSTR(vml_drawing)
+        TOSTR(volatile_dependencies)
+        TOSTR(worksheet)
+
+        // Worksheet parts
+        TOSTR(hyperlink)
+        TOSTR(image)
+    };
+
+    return (std::string("relationship type to string bug...."));
+}
+
 /// <summary>
 /// Represents an association between a source Package or part, and a target object which can be a part or external
 /// resource.

@@ -441,6 +441,13 @@ void cell::hyperlink(xlnt::range target, const std::string &display)
     }
 }
 
+void cell::formula(const formula_t & formula)
+{
+    d_->formula_ = formula;
+    worksheet().register_calc_chain_in_manifest();
+}
+
+
 void cell::formula(const std::string &formula)
 {
     if (formula.empty())
@@ -465,7 +472,7 @@ bool cell::has_formula() const
     return d_->formula_.is_set();
 }
 
-std::string cell::formula() const
+formula_t cell::formula() const
 {
     return d_->formula_.get();
 }

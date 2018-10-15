@@ -306,12 +306,12 @@ public:
 
         auto ws1 = wb.sheet_by_index(0);
         xlnt_assert(ws1.cell("C1").has_formula());
-        xlnt_assert_equals(ws1.cell("C1").formula(), "CONCATENATE(C2,C3)");
+        xlnt_assert_equals(ws1.cell("C1").formula().formula_string, "CONCATENATE(C2,C3)");
         ws1.cell("C1").clear_formula();
 
         auto ws2 = wb.sheet_by_index(1);
         xlnt_assert(ws2.cell("C1").has_formula());
-        xlnt_assert_equals(ws2.cell("C1").formula(), "C2*C3");
+        xlnt_assert_equals(ws2.cell("C1").formula().formula_string, "C2*C3");
         ws2.cell("C1").clear_formula();
 
         wb.save("clear_formulae.xlsx");
@@ -424,13 +424,13 @@ public:
 
         auto ws1 = wb.sheet_by_index(0);
         xlnt_assert(ws1.cell("C1").has_formula());
-        xlnt_assert_equals(ws1.cell("C1").formula(), "CONCATENATE(C2,C3)");
+        xlnt_assert_equals(ws1.cell("C1").formula().formula_string, "CONCATENATE(C2,C3)");
         xlnt_assert_equals(ws1.cell("C2").value<std::string>(), "a");
         xlnt_assert_equals(ws1.cell("C3").value<std::string>(), "b");
 
         auto ws2 = wb.sheet_by_index(1);
         xlnt_assert(ws2.cell("C1").has_formula());
-        xlnt_assert_equals(ws2.cell("C1").formula(), "C2*C3");
+        xlnt_assert_equals(ws2.cell("C1").formula().formula_string, "C2*C3");
         xlnt_assert_equals(ws2.cell("C2").value<int>(), 2);
         xlnt_assert_equals(ws2.cell("C3").value<int>(), 3);
     }

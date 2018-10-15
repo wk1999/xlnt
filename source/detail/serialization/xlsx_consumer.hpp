@@ -286,7 +286,7 @@ private:
     /// <summary>
     /// Read a rich text CT_RElt from the document currently being parsed.
     /// </summary>
-    rich_text read_rich_text(const xml::qname &parent, read_rich_text_statistics * stats = 0);
+    rich_text read_rich_text(const xml::qname &parent, read_rich_text_statistics * stats = nullptr);
 
     /// <summary>
     /// Returns true if the givent document type represents an XLSX file.

@@ -55,4 +55,21 @@ enum class XLNT_API cell_type
     formula_string
 };
 
+struct XLNT_API formula_t {
+    std::string formula_string;
+    std::string formula_ref;
+    std::string formula_shareid;
+    bool        is_shared;
+    formula_t():is_shared(false){}
+    formula_t(const std::string& str):
+        formula_string(str),is_shared(false){}
+    bool operator==(const formula_t & rhs) const {
+        return (formula_string == rhs.formula_string &&
+                formula_ref == rhs.formula_ref &&
+                formula_shareid == rhs.formula_shareid &&
+                is_shared == rhs.is_shared);
+    }
+};
+
+
 } // namespace xlnt

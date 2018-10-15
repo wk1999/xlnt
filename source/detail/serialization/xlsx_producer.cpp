@@ -2622,7 +2622,24 @@ if (ws.has_page_setup()) {
 
                 if (cell.has_formula())
                 {
-                    write_element(xmlns, "f", cell.formula());
+                    write_start_element(xmlns, "f");
+                    auto formula = cell.formula();
+                    if (formula.is_shared) {
+                        write_attribute("t", "shared");
+                        auto & ref = formula.formula_ref;
+                        auto & shared_id = formula.formula_shareid;
+                        if (!ref.empty()) {
+                            write_attribute("ref", ref);
+                        }
+                        if (!shared_id.empty()) {} {
+                            write_attribute("si", shared_id);
+                        }
+                    }
+                    auto & str = formula.formula_string;
+                    if (!str.empty()) {
+                        write_characters(str);
+                    }
+                    write_end_element(xmlns, "f");
                 }
 
                 switch (cell.data_type())

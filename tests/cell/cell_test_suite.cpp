@@ -219,7 +219,7 @@ private:
         xlnt_assert(!cell.has_formula());
         cell.formula("=42");
         xlnt_assert(cell.has_formula());
-        xlnt_assert_equals(cell.formula(), "42");
+        xlnt_assert_equals(cell.formula().formula_string, "42");
         cell.clear_formula();
         xlnt_assert(!cell.has_formula());
     }

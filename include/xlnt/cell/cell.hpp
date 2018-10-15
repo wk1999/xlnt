@@ -460,13 +460,15 @@ public:
     /// <summary>
     /// Returns the string representation of the formula applied to this cell.
     /// </summary>
-    std::string formula() const;
+    formula_t formula() const;
 
     /// <summary>
     /// Sets the formula of this cell to the given value.
     /// This formula string should begin with '='.
     /// </summary>
     void formula(const std::string &formula);
+
+    void formula(const formula_t & formula);
 
     /// <summary>
     /// Removes the formula from this cell. After this is called, has_formula() will return false.

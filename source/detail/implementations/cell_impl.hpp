@@ -59,7 +59,7 @@ struct cell_impl
     rich_text value_text_;
     double value_numeric_;
 
-    optional<std::string> formula_;
+    optional<formula_t> formula_;
     optional<hyperlink_impl> hyperlink_;
     optional<format_impl *> format_;
     optional<comment *> comment_;
