@@ -4,4 +4,5 @@
 #include <stdio.h>
 
 #define XLNT_DEBUG(args...) \
-    printf(args);
+    printf(args); \
+    fflush(stdout);

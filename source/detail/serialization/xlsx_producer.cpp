@@ -2244,11 +2244,11 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         write_attribute("summaryBelow", "1");
         write_attribute("summaryRight", "1");
         write_end_element(xmlns, "outlinePr");
-
+if (ws.has_page_setup()) {
         write_start_element(xmlns, "pageSetUpPr");
         write_attribute("fitToPage", write_bool(ws.page_setup().fit_to_page()));
         write_end_element(xmlns, "pageSetUpPr");
-
+}
         write_end_element(xmlns, "sheetPr");
     }
 
@@ -2370,10 +2370,61 @@ void xlsx_producer::write_worksheet(const relationship &rel)
     bool has_column_properties = false;
     const auto first_column = ws.lowest_column_or_props();
     const auto last_column = ws.highest_column_or_props();
+    column_properties last_prop;
+    column_t::index_t last_min_index;
+    column_t::index_t last_max_index;
+
+    const int last_prop_state_init = 0;
+    const int last_prop_state_run  = 1;
+    int last_prop_state = last_prop_state_init;
+
+    auto write_last_prop = [&]() {
+        if (last_prop_state_init == last_prop_state) {
+            return;
+        }
+
+        write_start_element(xmlns, "col");
+        write_attribute("min", last_min_index);
+        write_attribute("max", last_max_index);
+
+        if (last_prop.width.is_set())
+        {
+            double width = (last_prop.width.get() * 7 + 5) / 7;
+            write_attribute("width", serialize_number_to_string(width));
+        }
+
+        if (last_prop.best_fit)
+        {
+            write_attribute("bestFit", write_bool(true));
+        }
+
+        if (last_prop.style.is_set())
+        {
+            write_attribute("style", last_prop.style.get());
+        }
+
+        if (last_prop.hidden)
+        {
+            write_attribute("hidden", write_bool(true));
+        }
+
+        if (last_prop.custom_width)
+        {
+            write_attribute("customWidth", write_bool(true));
+        }
+
+        write_end_element(xmlns, "col");
+    };
 
     for (auto column = first_column; column <= last_column; column++)
     {
-        if (!ws.has_column_properties(column)) continue;
+        if (!ws.has_column_properties(column)) {
+            if (last_prop_state_run == last_prop_state) {
+                write_last_prop();
+                last_prop_state = last_prop_state_init;
+            }
+            continue;
+        }
 
 	    if(!has_column_properties)
         {
@@ -2383,37 +2434,26 @@ void xlsx_producer::write_worksheet(const relationship &rel)
 
         const auto &props = ws.column_properties(column);
 
-        write_start_element(xmlns, "col");
-        write_attribute("min", column.index);
-        write_attribute("max", column.index);
-
-        if (props.width.is_set())
-        {
-            double width = (props.width.get() * 7 + 5) / 7;
-            write_attribute("width", serialize_number_to_string(width));
+        if (last_prop_state_run == last_prop_state) {
+            if (last_prop == props) {
+                last_max_index = column.index;
+            } else {
+                write_last_prop();
+                last_prop_state = last_prop_state_init;
+            }
         }
 
-        if (props.best_fit)
-        {
-            write_attribute("bestFit", write_bool(true));
+        if (last_prop_state_init == last_prop_state) {
+            last_prop = props;
+            last_min_index = column.index;
+            last_max_index = column.index;
+            last_prop_state = last_prop_state_run;
         }
+    }
 
-        if (props.style.is_set())
-        {
-            write_attribute("style", props.style.get());
-        }
-
-        if (props.hidden)
-        {
-            write_attribute("hidden", write_bool(true));
-        }
-
-        if (props.custom_width)
-        {
-            write_attribute("customWidth", write_bool(true));
-        }
-
-        write_end_element(xmlns, "col");
+    if (last_prop_state_run == last_prop_state) {
+        write_last_prop();
+        last_prop_state = last_prop_state_init;
     }
 
     if (has_column_properties)
