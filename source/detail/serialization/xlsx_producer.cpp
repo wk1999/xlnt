@@ -1295,7 +1295,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
     if (stylesheet.style_impls.size() > 0)
     {
         write_start_element(xmlns, "cellStyleXfs");
-        write_attribute("count", stylesheet.style_impls.size());
+        write_attribute("count", stylesheet.style_names.size());
 
         for (const auto &current_style_name : stylesheet.style_names)
         {
@@ -1572,7 +1572,7 @@ void xlsx_producer::write_styles(const relationship & /*rel*/)
     if (stylesheet.style_impls.size() > 0)
     {
         write_start_element(xmlns, "cellStyles");
-        write_attribute("count", stylesheet.style_impls.size());
+        write_attribute("count", stylesheet.style_names.size());
         std::size_t style_index = 0;
 
         for (auto &current_style_name : stylesheet.style_names)
