@@ -44,6 +44,8 @@
 #include <xlnt/worksheet/header_footer.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
 
+#include "xlnt/debug/debug.hpp"
+
 namespace {
 
 std::vector<std::pair<std::string, std::string>> core_property_namespace(xlnt::core_property type)
@@ -2265,11 +2267,9 @@ if (ws.has_page_setup()) {
         write_start_element(xmlns, "sheetViews");
         write_start_element(xmlns, "sheetView");
 
-        const auto wb_view = source_.view();
         const auto view = ws.view();
 
-        if ((wb_view.active_tab.is_set() && (ws.id() - 1) == wb_view.active_tab.get())
-            || (!wb_view.active_tab.is_set() && ws.id() == 1))
+        if (view.selected())
         {
             write_attribute("tabSelected", write_bool(true));
         }

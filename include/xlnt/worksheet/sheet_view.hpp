@@ -65,6 +65,22 @@ public:
     }
 
     /// <summary>
+    /// Set whether to be selected of this view.
+    /// </summary>
+    void selected(bool is_select)
+    {
+        selected_ = is_select;
+    }
+
+    /// <summary>
+    /// Returns whether to be selected of this view.
+    /// </summary>
+    bool selected() const
+    {
+        return selected_;
+    }
+
+    /// <summary>
     /// Returns true if this view has a pane defined.
     /// </summary>
     bool has_pane() const
@@ -235,6 +251,11 @@ private:
     /// The id
     /// </summary>
     std::size_t id_ = 0;
+
+    /// <summary>
+    /// Whether or not to be selected
+    /// </summary>
+    bool selected_ = false;
 
     /// <summary>
     /// Whether or not to show grid lines

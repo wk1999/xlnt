@@ -438,6 +438,7 @@ workbook workbook::empty()
     ws.page_margins(margins);
 
     sheet_view view;
+    view.selected(true);
     ws.add_view(view);
 
     auto &format_properties = ws.d_->format_properties_;

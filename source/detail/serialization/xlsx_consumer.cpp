@@ -487,7 +487,7 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                 if (parser().attribute_present("tabSelected")
                     && is_true(parser().attribute("tabSelected")))
                 {
-                    target_.d_->view_.get().active_tab = ws.id() - 1;
+                    new_view.selected(true);
                 }
 
                 skip_attributes({"windowProtection", "showFormulas", "showRowColHeaders", "showZeros", "rightToLeft", "showRuler", "showOutlineSymbols", "showWhiteSpace",
@@ -567,7 +567,6 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                 }
 
                 expect_end_element(qn("spreadsheetml", "sheetView"));
-
                 ws.d_->views_.push_back(new_view);
             }
         }
