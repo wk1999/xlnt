@@ -2505,6 +2505,7 @@ if (ws.has_page_setup()) {
         }
 
         if (!any_non_null && !ws.has_row_properties(row)) continue;
+        if (first_block_column.index > last_block_column.index) continue;
 
         write_start_element(xmlns, "row");
         write_attribute("r", row);
