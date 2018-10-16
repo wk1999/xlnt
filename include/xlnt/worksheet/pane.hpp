@@ -75,11 +75,13 @@ struct XLNT_API pane
     /// The row where the split should take place
     /// </summary>
     row_t y_split = 1;
+    bool  y_is_split = false;
 
     /// <summary>
     /// The column where the split should take place
     /// </summary>
     column_t x_split = 1;
+    bool  x_is_split = false;
 
     /// <summary>
     /// Returns true if this pane is equal to rhs based on its top-left cell, state,

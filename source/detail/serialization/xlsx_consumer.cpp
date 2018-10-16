@@ -510,11 +510,13 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                         if (parser().attribute_present("xSplit"))
                         {
                             new_pane.x_split = parser().attribute<column_t::index_t>("xSplit");
+                            new_pane.x_is_split = true;
                         }
 
                         if (parser().attribute_present("ySplit"))
                         {
                             new_pane.y_split = parser().attribute<row_t>("ySplit");
+                            new_pane.y_is_split = true;
                         }
 
                         if (parser().attribute_present("activePane"))

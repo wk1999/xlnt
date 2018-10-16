@@ -462,6 +462,8 @@ public:
         xlnt_assert_equals(view.pane().state, xlnt::pane_state::frozen);
         xlnt_assert_equals(view.pane().top_left_cell.get(), "A4");
         xlnt_assert_equals(view.pane().y_split, 3);
+        xlnt_assert_equals(view.pane().x_is_split, false);
+        xlnt_assert_equals(view.pane().y_is_split, true);
     }
 
     void test_freeze_panes_vert()
@@ -482,6 +484,8 @@ public:
         xlnt_assert_equals(view.pane().state, xlnt::pane_state::frozen);
         xlnt_assert_equals(view.pane().top_left_cell.get(), "D1");
         xlnt_assert_equals(view.pane().x_split, 3);
+        xlnt_assert_equals(view.pane().x_is_split, true);
+        xlnt_assert_equals(view.pane().y_is_split, false);
     }
 
     void test_freeze_panes_both()
@@ -509,6 +513,8 @@ public:
         xlnt_assert_equals(view.pane().top_left_cell.get(), "D4");
         xlnt_assert_equals(view.pane().x_split, 3);
         xlnt_assert_equals(view.pane().y_split, 3);
+        xlnt_assert_equals(view.pane().x_is_split, true);
+        xlnt_assert_equals(view.pane().y_is_split, true);
     }
 
     void test_lowest_column()

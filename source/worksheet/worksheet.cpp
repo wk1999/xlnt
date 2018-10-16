@@ -315,12 +315,16 @@ void worksheet::freeze_panes(const cell_reference &ref)
         primary_view.add_selection(selection(pane_corner::bottom_left, ref));
         primary_view.pane().active_pane = pane_corner::bottom_left;
         primary_view.pane().y_split = ref.row() - 1;
+        primary_view.pane().y_is_split = true;
+        primary_view.pane().x_is_split = false;
     }
     else if (ref.row() == 1) // no row is frozen
     {
         primary_view.add_selection(selection(pane_corner::top_right, ref));
         primary_view.pane().active_pane = pane_corner::top_right;
         primary_view.pane().x_split = ref.column_index() - 1;
+        primary_view.pane().y_is_split = false;
+        primary_view.pane().x_is_split = true;
     }
     else // column and row is frozen
     {
@@ -330,6 +334,8 @@ void worksheet::freeze_panes(const cell_reference &ref)
         primary_view.pane().active_pane = pane_corner::bottom_right;
         primary_view.pane().x_split = ref.column_index() - 1;
         primary_view.pane().y_split = ref.row() - 1;
+        primary_view.pane().y_is_split = true;
+        primary_view.pane().x_is_split = true;
     }
 }
 
