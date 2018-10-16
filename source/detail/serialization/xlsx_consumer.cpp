@@ -1730,10 +1730,15 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
                 expect_start_element(qn("spreadsheetml", "sheet"), xml::content::simple);
 
                 auto title = parser().attribute("name");
-                skip_attribute("state");
+                bool visible = true;
+                if (parser().attribute_present("state")) {
+                    auto state = parser().attribute("state");
+                    visible = (state != "hidden");
+                }
 
                 sheet_title_index_map_[title] = index++;
                 sheet_title_id_map_[title] = parser().attribute<std::size_t>("sheetId");
+                sheet_title_visible_map_[title] = visible;
                 target_.d_->sheet_title_rel_id_map_[title] = parser().attribute(qn("r", "id"));
 
                 expect_end_element(qn("spreadsheetml", "sheet"));
@@ -1867,6 +1872,7 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
 
         auto id = sheet_title_id_map_[title];
         auto index = sheet_title_index_map_[title];
+        auto visible = sheet_title_visible_map_[title];
 
         auto insertion_iter = target_.d_->worksheets_.begin();
         while (insertion_iter != target_.d_->worksheets_.end() && sheet_title_index_map_[insertion_iter->title_] < index)
@@ -1874,7 +1880,7 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
             ++insertion_iter;
         }
 
-        current_worksheet_ = &*target_.d_->worksheets_.emplace(insertion_iter, &target_, id, title);
+        current_worksheet_ = &*target_.d_->worksheets_.emplace(insertion_iter, &target_, id, title, visible);
 
         if (!streaming_)
         {

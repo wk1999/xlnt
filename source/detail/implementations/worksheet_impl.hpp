@@ -49,10 +49,11 @@ namespace detail {
 
 struct worksheet_impl
 {
-    worksheet_impl(workbook *parent_workbook, std::size_t id, const std::string &title)
+    worksheet_impl(workbook *parent_workbook, std::size_t id,
+                    const std::string &title, bool visible = true)
         : parent_(parent_workbook),
           id_(id),
-          title_(title)
+          title_(title), visible_(visible)
     {
     }
 
@@ -67,6 +68,7 @@ struct worksheet_impl
 
         id_ = other.id_;
         title_ = other.title_;
+        visible_ = other.visible_;
         format_properties_ = other.format_properties_;
         column_properties_ = other.column_properties_;
         row_properties_ = other.row_properties_;
@@ -103,6 +105,7 @@ struct worksheet_impl
     {
         return id_ == rhs.id_
             && title_ == rhs.title_
+            && visible_ == rhs.visible_
             && format_properties_ == rhs.format_properties_
             && column_properties_ == rhs.column_properties_
             && row_properties_ == rhs.row_properties_
@@ -128,6 +131,7 @@ struct worksheet_impl
 
     std::size_t id_;
     std::string title_;
+    bool visible_;
 
     sheet_format_properties format_properties_;
 

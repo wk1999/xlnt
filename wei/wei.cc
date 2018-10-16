@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     wb.load(xlsx);
     load_end = time(0);
     std::cout << "ok" << std::endl;
-#if 1
+#if 0
     std::cout << "saveing..." << std::flush;
     xlsx += std::string(".1.xlsx");
     wb.save(xlsx);
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
     for (int i = 0; i < sc; i++) {
         xlnt::worksheet ws = wb.sheet_by_index(i);
         std::cout << "\t" << i << ": " << sts[i]
-        << "(id:" << ws.id() << ", state:" << str_state(ws.sheet_state()) << ")" << std::endl;
+        << "(id:" << ws.id() << ", visible:" << ws.sheet_visible() << ")" << std::endl;
     }
 
 
@@ -86,6 +86,7 @@ int main(int argc, char** argv)
               << "-" << ws2.lowest_row() << ") to (" << ws2.highest_column().column_string()
               << "-" << ws2.highest_row() << ")" << std::endl;
 
+#if 0
     // loop cell in sheet
     for (xlnt::row_t row = ws2.lowest_row(); row <= ws2.highest_row(); ++row) {
         //std::cout << "\trow " << row << " values:" << std::endl;
@@ -110,6 +111,7 @@ int main(int argc, char** argv)
 #endif            
         }
     }
+#endif
 
     read_end = time(0);
     std::cout << std::endl;
@@ -125,9 +127,7 @@ int main(int argc, char** argv)
             const xlnt::cell c1 = ws2.cell(col1, row);
             xlnt::cell c2 = ws2.cell(col2, row);
             if (c1.data_type() == xlnt::cell_type::number) {
-                std::cout << "do row " << row;
                 c2.value(c1.value<double>());
-                std::cout << " ok" << std::endl;
             }
         }
         xlsx += std::string("___new.xlsx");

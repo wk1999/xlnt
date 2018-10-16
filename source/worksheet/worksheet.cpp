@@ -888,10 +888,12 @@ void worksheet::sheet_state(xlnt::sheet_state state)
 
 sheet_state worksheet::sheet_state() const
 {
-    if (has_page_setup())
-        return page_setup().sheet_state();
-    else
-        return sheet_state::page_not_setup;
+    return page_setup().sheet_state();
+}
+
+bool worksheet::sheet_visible() const
+{
+    return d_->visible_;
 }
 
 void worksheet::add_column_properties(column_t column, const xlnt::column_properties &props)

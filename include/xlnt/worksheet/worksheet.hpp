@@ -592,6 +592,8 @@ public:
     /// </summary>
     xlnt::sheet_state sheet_state() const;
 
+    bool sheet_visible() const;
+
     /// <summary>
     /// Sets the sheet state of this sheet.
     /// </summary>

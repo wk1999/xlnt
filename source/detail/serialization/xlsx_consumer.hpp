@@ -400,6 +400,11 @@ private:
 	std::unordered_map<std::string, std::size_t> sheet_title_id_map_;
 
 	/// <summary>
+	/// Map of sheet titles to visible property.
+	/// </summary>
+	std::unordered_map<std::string, bool> sheet_title_visible_map_;
+
+	/// <summary>
 	/// Map of sheet titles to indices. Used to ensure sheets are maintained
 	/// in the correct order.
 	/// </summary>

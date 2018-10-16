@@ -600,7 +600,8 @@ void xlsx_producer::write_workbook(const relationship &rel)
         write_attribute("name", ws.title());
         write_attribute("sheetId", ws.id());
 
-        if (ws.has_page_setup() && ws.sheet_state() == xlnt::sheet_state::hidden)
+        if ((!ws.sheet_visible())
+            || (ws.has_page_setup() && ws.sheet_state() == xlnt::sheet_state::hidden))
         {
             write_attribute("state", "hidden");
         }
@@ -2631,7 +2632,7 @@ if (ws.has_page_setup()) {
                         if (!ref.empty()) {
                             write_attribute("ref", ref);
                         }
-                        if (!shared_id.empty()) {} {
+                        if (!shared_id.empty()) {
                             write_attribute("si", shared_id);
                         }
                     }
