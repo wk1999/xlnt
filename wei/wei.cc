@@ -118,23 +118,109 @@ int main(int argc, char** argv)
     std::cout << "Well run, load time " << load_end - start
               << "s, read time " << read_end - load_end << "s" << std::endl;
 
+    // map<sheet_title, map<from_col, to_col> >
+    typedef std::map<std::string, std::string> COL_MAP;
+    typedef std::map<std::string, COL_MAP> SHEET_MAP;
+    SHEET_MAP sheet_map;
+    COL_MAP   col_map; //tmp for every sheet
+
+    col_map["F"] = "J";
+    col_map["AG"] = "AH";
+    col_map["BB"] = "BF";
+    col_map["BX"] = "BY";
+    sheet_map["TTL SUM"] = col_map;
+
+    col_map.clear();
+    col_map["I"] = "M";
+    sheet_map["Sheet2"] = col_map;
+
+    col_map.clear();
+    col_map["J"] = "M";
+    sheet_map["By Seller"] = col_map;
+
+    col_map.clear();
+    col_map["AF"] = "AJ";
+    sheet_map["IS Direct Rev"] = col_map;
+
+    col_map.clear();
+    col_map["F"] = "J";
+    col_map["AF"] = "AJ";
+    sheet_map["IS Signing(LT500K)"] = col_map;
+
+    col_map.clear();
+    col_map["F"] = "J";
+    col_map["AG"] = "AK";
+    sheet_map["IS Rev (PRC Comm)"] = col_map;
+
+    col_map.clear();
+    col_map["F"] = "J";
+    col_map["AG"] = "AK";
+    sheet_map["IS Signing (PRC Comm) "] = col_map;
+
+    col_map.clear();
+    col_map["F"] = "G";
+    col_map["AE"] = "AF";
+    sheet_map["IS Brand Format"] = col_map;
+
+    col_map.clear();
+    col_map["F"] = "G";
+    col_map["K"] = "L";
+    col_map["P"] = "Q";
+    col_map["U"] = "V";
+    col_map["Z"] = "AA";
+    col_map["AE"] = "AF";
+    col_map["AJ"] = "AK";
+    col_map["AO"] = "AP";
+    col_map["AT"] = "AU";
+    col_map["AY"] = "AZ";
+    sheet_map["IS - Brand "] = col_map;
+
+    col_map.clear();
+    col_map["F"] = "J";
+    col_map["AG"] = "AK";
+    sheet_map["TSS Rev (Comm)"] = col_map;
+
+    col_map.clear();
+    col_map["F"] = "J";
+    col_map["AG"] = "AK";
+    sheet_map["TSS Signing (Comm)"] = col_map;
+
+    col_map.clear();
+    col_map["F"] = "J";
+    col_map["AG"] = "AK";
+    sheet_map["LOGO Rev (ENT non-KAP)"] = col_map;
+
+    col_map.clear();
+    col_map["G"] = "K";
+    col_map["AH"] = "AL";
+    sheet_map["LOGO Signing (ENT non-KAP)"] = col_map;
+
     // test copy F6 to J6 on "TTL SUM"
-    if (ws2.title() == "TTL SUM") {
-        std::cout << "do ttl sum" << std::endl;
-        xlnt::column_t col1("F");
-        xlnt::column_t col2("J");
-        for (xlnt::row_t row = ws2.lowest_row(); row <= ws2.highest_row(); ++row) {
-            const xlnt::cell c1 = ws2.cell(col1, row);
-            xlnt::cell c2 = ws2.cell(col2, row);
-            if (c1.data_type() == xlnt::cell_type::number) {
-                c2.value(c1.value<double>());
+    SHEET_MAP::const_iterator sheet_it = sheet_map.begin();
+    SHEET_MAP::const_iterator sheet_end = sheet_map.end();
+    for (; sheet_it != sheet_end; ++sheet_it) {
+        const auto & title = sheet_it->first;
+        const auto & col_m = sheet_it->second;
+        std::cout << "working " << title << "..." << std::flush;
+        auto ws = wb.sheet_by_title(title);
+        for (xlnt::row_t row = ws.lowest_row(); row <= ws.highest_row(); ++row) {
+            COL_MAP::const_iterator col_it = col_m.begin();
+            COL_MAP::const_iterator col_end = col_m.end();
+            for (; col_it != col_end; ++col_it) {
+                const auto c1 = ws.cell(col_it->first, row);
+                auto c2 = ws.cell(col_it->second, row);
+                if (c1.data_type() == xlnt::cell_type::number) {
+                    c2.value(c1.value<double>());
+                }
             }
         }
-        xlsx += std::string("___new.xlsx");
-        std::cout << "read to save to " << xlsx << std::endl;
-        wb.save(xlsx);
-        int save_end = time(0);
-        std::cout << "save time " << save_end - read_end << std::endl;
+        std::cout << "ok" << std::endl;
     }
+    xlsx += std::string("___new.xlsx");
+    std::cout << "save to " << xlsx << "..." << std::flush;
+    wb.save(xlsx);
+    std::cout << "ok" << std::endl;
+    int save_end = time(0);
+    std::cout << "save time " << save_end - read_end << "s. finished BYE." << std::endl;
     return (0);
 }
