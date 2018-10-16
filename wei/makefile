@@ -1,6 +1,6 @@
 
 # git repo position
-REPO = /home/ewwwkkk/ooo/github/xlnt-wk
+REPO = $(shell cd .. && pwd)
 
 RM = rm
 SED = sed
@@ -16,7 +16,7 @@ OBJ_NAME = a.out
 
 # flag config
 INC_DIRS = -I$(REPO)/include
-CFLAGS = -Wall
+CFLAGS = -Wall -std=c++17 -g
 LDFLAGS = -L$(REPO)/source -lxlnt -Wl,-rpath,$(REPO)/source
 
 all: $(OBJ_NAME)
