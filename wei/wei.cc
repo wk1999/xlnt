@@ -35,18 +35,113 @@ inline std::string str_state(xlnt::sheet_state st)
     }
 }
 
+#include <unistd.h>
+#include <dirent.h>
+using namespace std;
+vector<string> getFiles(string cate_dir)
+{
+	vector<string> files;//存放文件名
+ 
+#ifdef WIN32
+	_finddata_t file;
+	long lf;
+	//输入文件夹路径
+	if ((lf=_findfirst(cate_dir.c_str(), &file)) == -1) {
+		cout<<cate_dir<<" not found!!!"<<endl;
+	} else {
+		while(_findnext(lf, &file) == 0) {
+			//输出文件名
+			//cout<<file.name<<endl;
+			if (strcmp(file.name, ".") == 0 || strcmp(file.name, "..") == 0)
+				continue;
+			files.push_back(file.name);
+		}
+	}
+	_findclose(lf);
+#else
+ 
+	DIR *dir;
+	struct dirent *ptr;
+	//char base[1000];
+ 
+	if ((dir=opendir(cate_dir.c_str())) == NULL)
+        {
+		perror("Open dir error...");
+                exit(1);
+        }
+ 
+	while ((ptr=readdir(dir)) != NULL)
+	{
+		if(strcmp(ptr->d_name,".")==0 || strcmp(ptr->d_name,"..")==0)    ///current dir OR parrent dir
+		        continue;
+		else if(ptr->d_type == 8)    ///file
+			//printf("d_name:%s/%s\n",basePath,ptr->d_name);
+			files.push_back(ptr->d_name);
+		else if(ptr->d_type == 10)    ///link file
+			//printf("d_name:%s/%s\n",basePath,ptr->d_name);
+			continue;
+		else if(ptr->d_type == 4)    ///dir
+		{
+			//files.push_back(ptr->d_name);
+			/*
+		        memset(base,'\0',sizeof(base));
+		        strcpy(base,basePath);
+		        strcat(base,"/");
+		        strcat(base,ptr->d_nSame);
+		        readFileList(base);
+			*/
+		}
+	}
+	closedir(dir);
+#endif
+ 
+	sort(files.begin(), files.end());
+	return files;
+}
+
+
 
 int main(int argc, char** argv)
 {
-    if (2 != argc) {
+    std::string xlsx;
+
+    if (1 == argc) {
+        std::size_t i = 0;
+        std::string exe_path;
+        char * me = argv[0];
+        char * slash = strrchr(me, '/');
+        if (slash) {
+            *slash = 0;
+            exe_path = me;
+        } else {
+            exe_path = ".";
+        }
+std::cout << "exe path:" << exe_path << std::endl;
+        std::vector<std::string> files = getFiles(exe_path);
+        for (; i < files.size(); i++) {
+            const char * ext = strrchr(files[i].c_str(), '.');
+            if (ext) {
+                ext++;
+                if (0 == strcmp(ext, "xlsx") || 0 == strcmp(ext, "xls")) {
+                    xlsx = exe_path + "/" + files[i];
+                    break;
+                }
+            }
+        }
+        if (i == files.size()) {
+            std::cout << "no excel files were found, BYE" << std::endl;
+            return (0);
+        }
+    } else if (2 == argc) {
+        xlsx = argv[1];
+    } else {
         std::cout << "please input an excel file as param" << std::endl;
         return (1);
     }
 
-    std::string xlsx(argv[1]);
     time_t  start, load_end, read_end;
     xlnt::workbook wb;
-    std::cout << "loading..." << std::flush;
+    std::cout << "loading " << xlsx << " ..." << std::flush;
     start = time(0);
     wb.load(xlsx);
     load_end = time(0);
@@ -131,6 +226,7 @@ int main(int argc, char** argv)
     col_map["AI"] = TO_ZERO;
     col_map["BB"] = "BF";
     col_map["BG"] = TO_ZERO;
+    col_map["AL"] = TO_ZERO;
     col_map["BX"] = "BY";
     col_map["BZ"] = TO_ZERO;
     sheet_map["TTL SUM"] = col_map;
