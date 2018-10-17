@@ -3384,15 +3384,24 @@ void xlsx_producer::write_relationships(const std::vector<xlnt::relationship> &r
     write_start_element(xmlns, "Relationships");
     write_namespace(xmlns, "");
 
+    auto get_rid_from_index = [](std::size_t index)->std::string {
+        return std::string("rId") + std::to_string(index);
+    };
+    std::size_t skip_count = 0;
+
     for (std::size_t i = 1; i <= relationships.size(); ++i)
     {
         auto rel_iter = std::find_if(relationships.begin(), relationships.end(),
-            [&i](const relationship &r) { return r.id() == "rId" + std::to_string(i); });
+            [&i, get_rid_from_index](const relationship &r) { return r.id() == get_rid_from_index(i); });
         auto relationship = *rel_iter;
 
+        if (relationship.type() == relationship_type::unknown) {
+            skip_count++;
+            continue;
+        }
         write_start_element(xmlns, "Relationship");
 
-        write_attribute("Id", relationship.id());
+        write_attribute("Id", get_rid_from_index(i-skip_count));
         write_attribute("Type", relationship.type());
         write_attribute("Target", relationship.target().path().string());
 
