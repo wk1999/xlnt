@@ -62,6 +62,8 @@
 #include <detail/serialization/xlsx_consumer.hpp>
 #include <detail/serialization/xlsx_producer.hpp>
 
+#include "xlnt/debug/debug.hpp"
+
 namespace {
 
 using xlnt::detail::open_stream;
@@ -717,6 +719,12 @@ const worksheet workbook::sheet_by_id(std::size_t id) const
     throw key_not_found();
 }
 
+worksheet workbook::active_sheet(std::size_t active_index)
+{
+    d_->active_sheet_index_ = active_index;
+    return sheet_by_index(d_->active_sheet_index_.get());
+}
+
 worksheet workbook::active_sheet()
 {
     return sheet_by_index(d_->active_sheet_index_.is_set() ? d_->active_sheet_index_.get() : 0);
@@ -1034,6 +1042,11 @@ void workbook::remove_sheet(worksheet ws)
     auto rel_id_map = d_->manifest_.unregister_relationship(wb_rel.target(), ws_rel_id);
     d_->sheet_title_rel_id_map_.erase(ws.title());
     d_->worksheets_.erase(match_iter);
+
+    if (d_->active_sheet_index_.is_set()
+        && d_->active_sheet_index_.get() >= d_->worksheets_.size()) {
+        d_->active_sheet_index_.clear();
+    }
 
     // Shift sheet title->ID mappings down as a result of manifest::unregister_relationship above.
     for (auto &title_rel_id_pair : d_->sheet_title_rel_id_map_)

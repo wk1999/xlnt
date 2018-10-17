@@ -202,6 +202,12 @@ public:
     /// Returns the worksheet that is determined to be active. An active
     /// sheet is that which is initially shown by the spreadsheet editor.
     /// </summary>
+    worksheet active_sheet(std::size_t active_index);
+
+    /// <summary>
+    /// Returns the worksheet that is determined to be active. An active
+    /// sheet is that which is initially shown by the spreadsheet editor.
+    /// </summary>
     worksheet active_sheet();
 
     /// <summary>

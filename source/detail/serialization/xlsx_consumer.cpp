@@ -1585,6 +1585,7 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
 
     expect_start_element(qn("workbook", "workbook"), xml::content::complex);
     skip_attribute(qn("mc", "Ignorable"));
+    optional<std::size_t> active_sheet_index;
 
     while (in_element(qn("workbook", "workbook")))
     {
@@ -1714,6 +1715,7 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
                 if (parser().attribute_present("activeTab"))
                 {
                     view.active_tab = parser().attribute<std::size_t>("activeTab");
+                    active_sheet_index = view.active_tab.get();
                 }
 
                 target_.view(view);
@@ -1887,6 +1889,10 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
         {
             read_part({workbook_rel, worksheet_rel});
         }
+    }
+
+    if (active_sheet_index.is_set()) {
+        target_.active_sheet(active_sheet_index.get());
     }
 }
 
