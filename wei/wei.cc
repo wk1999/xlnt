@@ -71,6 +71,7 @@ int main(int argc, char** argv)
     }
 
 
+#if 0
     // do active sheet
     xlnt::worksheet aws = wb.active_sheet();
     std::cout << "active sheet id is " << aws.id() << ", title is " << aws.title() << std::endl;
@@ -86,7 +87,6 @@ int main(int argc, char** argv)
               << "-" << ws2.lowest_row() << ") to (" << ws2.highest_column().column_string()
               << "-" << ws2.highest_row() << ")" << std::endl;
 
-#if 0
     // loop cell in sheet
     for (xlnt::row_t row = ws2.lowest_row(); row <= ws2.highest_row(); ++row) {
         //std::cout << "\trow " << row << " values:" << std::endl;
@@ -123,76 +123,110 @@ int main(int argc, char** argv)
     typedef std::map<std::string, COL_MAP> SHEET_MAP;
     SHEET_MAP sheet_map;
     COL_MAP   col_map; //tmp for every sheet
+#define TO_ZERO "ZERO"
 
     col_map["F"] = "J";
+    col_map["K"] = TO_ZERO;
     col_map["AG"] = "AH";
+    col_map["AI"] = TO_ZERO;
     col_map["BB"] = "BF";
+    col_map["BG"] = TO_ZERO;
     col_map["BX"] = "BY";
+    col_map["BZ"] = TO_ZERO;
     sheet_map["TTL SUM"] = col_map;
 
     col_map.clear();
     col_map["I"] = "M";
+    col_map["N"] = TO_ZERO;
     sheet_map["Sheet2"] = col_map;
 
     col_map.clear();
     col_map["J"] = "M";
+    col_map["N"] = TO_ZERO;
     sheet_map["By Seller"] = col_map;
 
     col_map.clear();
     col_map["AF"] = "AJ";
+    col_map["AK"] = TO_ZERO;
     sheet_map["IS Direct Rev"] = col_map;
 
     col_map.clear();
     col_map["F"] = "J";
+    col_map["K"] = TO_ZERO;
     col_map["AF"] = "AJ";
+    col_map["AK"] = TO_ZERO;
     sheet_map["IS Signing(LT500K)"] = col_map;
 
     col_map.clear();
     col_map["F"] = "J";
+    col_map["K"] = TO_ZERO;
     col_map["AG"] = "AK";
+    col_map["AL"] = TO_ZERO;
     sheet_map["IS Rev (PRC Comm)"] = col_map;
 
     col_map.clear();
     col_map["F"] = "J";
+    col_map["K"] = TO_ZERO;
     col_map["AG"] = "AK";
+    col_map["AL"] = TO_ZERO;
     sheet_map["IS Signing (PRC Comm) "] = col_map;
 
     col_map.clear();
     col_map["F"] = "G";
+    col_map["H"] = TO_ZERO;
     col_map["AE"] = "AF";
+    col_map["AG"] = TO_ZERO;
     sheet_map["IS Brand Format"] = col_map;
 
     col_map.clear();
     col_map["F"] = "G";
+    col_map["H"] = TO_ZERO;
     col_map["K"] = "L";
+    col_map["M"] = TO_ZERO;
     col_map["P"] = "Q";
+    col_map["R"] = TO_ZERO;
     col_map["U"] = "V";
+    col_map["W"] = TO_ZERO;
     col_map["Z"] = "AA";
+    col_map["AB"] = TO_ZERO;
     col_map["AE"] = "AF";
+    col_map["AG"] = TO_ZERO;
     col_map["AJ"] = "AK";
+    col_map["AL"] = TO_ZERO;
     col_map["AO"] = "AP";
+    col_map["AQ"] = TO_ZERO;
     col_map["AT"] = "AU";
+    col_map["AV"] = TO_ZERO;
     col_map["AY"] = "AZ";
+    col_map["BA"] = TO_ZERO;
     sheet_map["IS - Brand "] = col_map;
 
     col_map.clear();
     col_map["F"] = "J";
+    col_map["K"] = TO_ZERO;
     col_map["AG"] = "AK";
+    col_map["AL"] = TO_ZERO;
     sheet_map["TSS Rev (Comm)"] = col_map;
 
     col_map.clear();
     col_map["F"] = "J";
+    col_map["K"] = TO_ZERO;
     col_map["AG"] = "AK";
+    col_map["AL"] = TO_ZERO;
     sheet_map["TSS Signing (Comm)"] = col_map;
 
     col_map.clear();
     col_map["F"] = "J";
+    col_map["K"] = TO_ZERO;
     col_map["AG"] = "AK";
+    col_map["AL"] = TO_ZERO;
     sheet_map["LOGO Rev (ENT non-KAP)"] = col_map;
 
     col_map.clear();
     col_map["G"] = "K";
+    col_map["L"] = TO_ZERO;
     col_map["AH"] = "AL";
+    col_map["AM"] = TO_ZERO;
     sheet_map["LOGO Signing (ENT non-KAP)"] = col_map;
 
     // test copy F6 to J6 on "TTL SUM"
@@ -207,10 +241,19 @@ int main(int argc, char** argv)
             COL_MAP::const_iterator col_it = col_m.begin();
             COL_MAP::const_iterator col_end = col_m.end();
             for (; col_it != col_end; ++col_it) {
-                const auto c1 = ws.cell(col_it->first, row);
-                auto c2 = ws.cell(col_it->second, row);
-                if (c1.data_type() == xlnt::cell_type::number) {
-                    c2.value(c1.value<double>());
+                const auto & first = col_it->first;
+                const auto & second = col_it->second;
+                if (second == TO_ZERO) {
+                    auto c = ws.cell(first, row);
+                    if (c.data_type() == xlnt::cell_type::number) {
+                        c.value(0);
+                    }
+                } else {
+                    const auto c1 = ws.cell(first, row);
+                    auto c2 = ws.cell(second, row);
+                    if (c1.data_type() == xlnt::cell_type::number) {
+                        c2.value(c1.value<double>());
+                    }
                 }
             }
         }
