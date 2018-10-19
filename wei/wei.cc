@@ -1,42 +1,11 @@
 
 #include <xlnt/xlnt.hpp>
-
-int write_smpl()
-{
-    xlnt::workbook wb;
-    xlnt::worksheet ws = wb.active_sheet();
-
-    ws.cell("A1").value(700);
-    ws.cell("B2").value("hello the world");
-    ws.cell("C3").formula("=RAND()");
-
-    ws.merge_cells("C3:D4");
-    //ws.freeze_panes("B2");
-
-    wb.save("sample.xlsx");
-
-    return 0;
-}
-
 #include <iostream>
 #include <time.h>
-
-inline std::string str_state(xlnt::sheet_state st)
-{
-    switch(st) {
-        case xlnt::sheet_state::visible:
-            return "visible";
-        case xlnt::sheet_state::hidden:
-            return "hidden";
-        case xlnt::sheet_state::very_hidden:
-            return "very hidden";
-        default:
-            return "PAGE NO SETUP!!!!!!!!!!!!!!!!!!!";
-    }
-}
-
 #include <unistd.h>
 #include <dirent.h>
+#include <string.h>
+
 using namespace std;
 vector<string> getFiles(string cate_dir)
 {
@@ -99,7 +68,17 @@ vector<string> getFiles(string cate_dir)
 	return files;
 }
 
-
+void stream_test(const std::string & file)
+{
+    std::cout << "stream test file: " << file << std::endl;
+    xlnt::workstream_visitor visitor(file+"_100.xlsx");
+    xlnt::workstream  ws;
+    int result;
+    result = ws.load(file);
+    std::cout << "load result: " << result << std::endl;
+    result = ws.visit(visitor);
+    std::cout << "visit result: " << result << std::endl;
+}
 
 int main(int argc, char** argv)
 {
@@ -138,6 +117,11 @@ std::cout << "exe path:" << exe_path << std::endl;
         std::cout << "please input an excel file as param" << std::endl;
         return (1);
     }
+
+#if 1
+    stream_test(xlsx);
+    return 0;
+#endif
 
     time_t  start, load_end, read_end;
     xlnt::workbook wb;

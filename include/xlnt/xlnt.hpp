@@ -90,3 +90,7 @@
 #include <xlnt/worksheet/sheet_protection.hpp>
 #include <xlnt/worksheet/sheet_view.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+
+// workstream
+#include <xlnt/workstream/workstream.hpp>
+#include <xlnt/workstream/workstream_visitor.hpp>
