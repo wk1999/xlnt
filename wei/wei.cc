@@ -71,12 +71,14 @@ vector<string> getFiles(string cate_dir)
 void stream_test(const std::string & file)
 {
     std::cout << "stream test file: " << file << std::endl;
-    xlnt::workstream_visitor visitor(file+"_100.xlsx");
+    xlnt::workstream_visitor visitor;
+    xlnt::workstream_visitor_group visitors(file+"_100.xlsx");
+    visitors.add_default_visitor(visitor);
     xlnt::workstream  ws;
     int result;
     result = ws.load(file);
     std::cout << "load result: " << result << std::endl;
-    result = ws.visit(visitor);
+    result = ws.visit(visitors);
     std::cout << "visit result: " << result << std::endl;
 }
 

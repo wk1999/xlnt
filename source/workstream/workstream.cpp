@@ -19,9 +19,9 @@ int workstream::load(const std::string & xlsx_file)
     return (d_->load(xlsx_file));
 }
 
-int workstream::visit(workstream_visitor & xlsx_visitor)
+int workstream::visit(workstream_visitor_group & xlsx_visitors)
 {
-    return (d_->visit(xlsx_visitor));
+    return (d_->visit(xlsx_visitors));
 }
 
 }

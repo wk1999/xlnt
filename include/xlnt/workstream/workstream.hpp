@@ -10,7 +10,7 @@
 
 namespace xlnt {
 
-class workstream_visitor;
+class workstream_visitor_group;
 
 namespace detail {
 class workstream_impl;
@@ -27,7 +27,7 @@ private:
 
 public:
     int load(const std::string & xlsx_file);
-    int visit(workstream_visitor & xlsx_visitor);
+    int visit(workstream_visitor_group & xlsx_visitors);
 
 private:
     void swap(workstream rhs);
