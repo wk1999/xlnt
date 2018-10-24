@@ -127,7 +127,9 @@ void workstream_impl::visit_part(const std::string & partname, std::unique_ptr<o
 
     auto current_part_streambuf_ = ozs->open(filepath);
     std::ostream current_part_stream(current_part_streambuf_.get());
-    xml::serializer s(current_part_stream, filepath.string());
+    xml::serializer s(current_part_stream, filepath.string(), 0);
+
+    s.xml_decl("1.0", "UTF-8", "yes");
 
     std::string newval;
     for (xml::parser::event_type e: p) {

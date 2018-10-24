@@ -16,7 +16,7 @@ OBJ_NAME = a.out
 
 # flag config
 INC_DIRS = -I$(REPO)/include
-CFLAGS = -Wall -std=c++17 -g
+CFLAGS = -Wall -std=c++17
 LDFLAGS = -L$(REPO)/source -lxlnt -Wl,-rpath,$(REPO)/source
 
 all: $(OBJ_NAME)
@@ -31,7 +31,7 @@ all: $(OBJ_NAME)
 	$(CC) -c $(CFLAGS) $(INC_DIRS) -Wp,-MD,$(@:%.o=%.d) -o $@ $<
 
 $(OBJ_NAME): $(OBJ_FILES)
-	$(CXX) $(LDFLAGS) -o $@ $^
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
 	rm -f $(OBJ_FILES)
