@@ -386,6 +386,76 @@ public:
     }
 };
 
+class external_visitor : public xlnt::workstream_visitor {
+    int _i;
+
+public:
+    external_visitor():_i(0){}
+    virtual void before_visit(const std::string & visit_name, const void * data) {
+        std::cout << "I am visiting " << visit_name << std::endl;
+    }
+    virtual void after_visit(const std::string & visit_name) {
+        std::cout << "End of visiting " << visit_name << std::endl;
+    }
+    virtual visit_actions start_element(const std::string & element, std::string & newval)
+    {
+        const xlnt::workstream_path_stack & stack = get_path_stack();
+
+        if (stack == "externalLink") {
+            _i = 0;
+            std::cout << "start element " << stack.string()<<"("<<element<<")" << std::endl;
+        }
+        return (WRITE);
+    }
+    virtual void end_element()
+    {
+        const xlnt::workstream_path_stack & stack = get_path_stack();
+
+        if (stack == "externalLink") {
+            std::cout << "stop element " << stack.string() << std::endl;
+        }
+    }
+    virtual visit_actions start_attribute(const std::string & attr, std::string & newval)
+    {
+        const xlnt::workstream_path_stack & stack = get_path_stack();
+        const xlnt::workstream_path_stack & parent = stack.parent();
+
+        if (parent == "externalLink") {
+            std::cout << "start attr " << ++_i << ":" << stack.string() << "(" << attr << ")" << std::endl;
+        }
+        return (WRITE);
+    }
+    virtual void end_attribute()
+    {
+        const xlnt::workstream_path_stack & stack = get_path_stack();
+        const xlnt::workstream_path_stack & parent = stack.parent();
+
+        if (parent == "externalLink") {
+            std::cout << "stop  attr " << _i << ":" << stack.string() << std::endl;
+        }
+    }
+    virtual visit_actions character(const std::string & value, std::string & newval)
+    {
+        const xlnt::workstream_path_stack & stack = get_path_stack();
+        const xlnt::workstream_path_stack & parent = stack.parent();
+
+        if (parent == "externalLink") {
+            std::cout << "character " << _i << ":" << stack.string() << "(" << value << ")" << std::endl;
+        }
+        return (WRITE);
+    }
+    virtual visit_actions start_ns(const std::string & ns UNUSED, std::string & newval UNUSED)
+    {
+        const xlnt::workstream_path_stack & stack = get_path_stack();
+        //const xlnt::workstream_path_stack & parent = stack.parent();
+
+        if (stack == "externalLink") {
+            std::cout << "namespace " << _i << ":" << stack.string() << "(" << ns << ")" << std::endl;
+        }
+        return (WRITE);
+    }
+};
+
 void stream_test(const std::string & file, const config_map & cmap)
 {
     std::cout << "stream test file: " << file << std::endl;
@@ -393,7 +463,9 @@ void stream_test(const std::string & file, const config_map & cmap)
     sheet_visitor   sheet_visitor(cmap);
     xlnt::workstream_visitor_group visitors(file+"_100.xlsx");
     visitors.add_default_visitor(visitor);
-    visitors.add_visitor(xlnt::relationship_type::worksheet, sheet_visitor);
+    //visitors.add_visitor(xlnt::relationship_type::worksheet, sheet_visitor);
+    external_visitor ex_visitor;
+    visitors.add_visitor(xlnt::relationship_type::external_workbook_references,ex_visitor);
     xlnt::workstream  ws;
     int result;
     result = ws.load(file);

@@ -73,4 +73,21 @@ std::string workstream_path_stack::string() const {
     return (a);
 }
 
+const workstream_path_stack & workstream_path_stack::parent() const
+{
+    _parent.reset(new workstream_path_stack);
+    std::size_t size = _stack.size();
+
+    if (size <= 1) {
+        return (*_parent);
+    }
+
+    for (std::size_t i = 0; i < (size-1); i++) {
+        _parent->push(_stack[i]);
+    }
+
+    return (*_parent);
+}
+
+
 }

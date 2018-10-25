@@ -7,6 +7,7 @@
 #include <fstream>
 #include <map>
 #include <string>
+#include <memory>
 
 namespace xlnt {
 
