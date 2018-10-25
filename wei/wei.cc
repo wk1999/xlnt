@@ -132,6 +132,8 @@ public:
         sheet_map["By Seller"] = col_map;
 
         col_map.clear();
+        col_map["F"] = "J";
+        col_map["K"] = ZERO;
         col_map["AF"] = "AJ";
         col_map["AK"] = ZERO;
         sheet_map["IS Direct Rev"] = col_map;
