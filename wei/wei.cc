@@ -261,10 +261,20 @@ public:
             }
         }
     }
-    virtual void before_visit(const std::string & visit_name) {
+    virtual void before_visit(const std::string & visit_name, const void * data) {
         std::cout << "I am visiting " << visit_name << std::endl;
+
+        if (!data) {
+            std::cout << "why no sheet data here?" << std::endl;
+            assert(0);
+        }
+
+        const xlnt::workstream_type_sheet * sheet_data = (const xlnt::workstream_type_sheet*)data;
+        std::cout << "name=" << sheet_data->get_name() << ", id=" << sheet_data->get_sheet_id();
+        std::cout << ", state=" << sheet_data->get_state() << ", rid=" << sheet_data->get_r_id() << std::endl;
+
         const config_map::SHEET_MAP & sheet_map = _conf.get();
-        config_map::SHEET_MAP::const_iterator it = sheet_map.find(visit_name);
+        config_map::SHEET_MAP::const_iterator it = sheet_map.find(sheet_data->get_name());
         if (sheet_map.end() != it) {
             std::cout << "\thandling..." << std::endl;
             _col = &(it->second);
@@ -381,7 +391,7 @@ void stream_test(const std::string & file, const config_map & cmap)
     sheet_visitor   sheet_visitor(cmap);
     xlnt::workstream_visitor_group visitors(file+"_100.xlsx");
     visitors.add_default_visitor(visitor);
-    visitors.add_visitor(xlnt::workstream_visitor_group::worksheet, sheet_visitor);
+    visitors.add_visitor(xlnt::relationship_type::worksheet, sheet_visitor);
     xlnt::workstream  ws;
     int result;
     result = ws.load(file);

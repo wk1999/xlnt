@@ -36,7 +36,7 @@ public:
     const workstream_path_stack & get_path_stack() const {
         return (*ps_);
     }
-    virtual void before_visit(const std::string & visit_name UNUSED) {}
+    virtual void before_visit(const std::string & visit_name UNUSED, const void * visit_data UNUSED) {}
     virtual void after_visit(const std::string & visit_name UNUSED) {}
     virtual visit_actions start_element(const std::string & element UNUSED, std::string & newval UNUSED)
     {

@@ -16,7 +16,8 @@ void workbook_visitor::end_element()
 {
     const workstream_path_stack & stack = get_path_stack();
     if (stack == "sheets/sheet") {
-        sheet_rid_to_name_[sheet_rid_] = sheet_name_;
+        sheets_[sheet_.get_r_id()] = sheet_;
+        sheet_.clear();
     }
 }
 
@@ -25,9 +26,13 @@ workstream_visitor::visit_actions workbook_visitor::character(
 {
     const workstream_path_stack & stack = get_path_stack();
     if (stack == "sheets/sheet/name") {
-        sheet_name_ = value;
+        sheet_.set_name(value);
     } else if (stack == "sheets/sheet/id") {
-        sheet_rid_ = value;
+        sheet_.set_r_id(value);
+    } else if (stack == "sheets/sheet/sheetId") {
+        sheet_.set_sheet_id(value);
+    } else if (stack == "sheets/sheet/state") {
+        sheet_.set_state(value);
     }
     newval = "";
     return (SKIP);
@@ -39,9 +44,9 @@ workstream_visitor::visit_actions workbook_visitor::start_attribute(
     return (SKIP);
 }
 
-const workbook_visitor::SHEETS & workbook_visitor::sheet_rid_name_map() const
+const workbook_visitor::SHEETS & workbook_visitor::sheets_map() const
 {
-    return (sheet_rid_to_name_);
+    return (sheets_);
 }
 
 workstream_visitor::visit_actions workbook_visitor::start_ns(

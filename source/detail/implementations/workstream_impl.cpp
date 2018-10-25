@@ -40,44 +40,36 @@ int workstream_impl::visit(workstream_visitor_group & visitors)
     workbook_visitor    wb_visitor;
     wb_visitor.init_path_stack(stack_);
     visit_part("xl/workbook.xml", ozs, wb_visitor);
-    const workbook_visitor::SHEETS & sheets = wb_visitor.sheet_rid_name_map();
+    const workbook_visitor::SHEETS & sheets = wb_visitor.sheets_map();
 
     // do visit
     workbook_rel_visitor    wb_rel_visitor;
     wb_rel_visitor.init_path_stack(stack_);
     visit_part("xl/_rels/workbook.xml.rels", ozs, wb_rel_visitor);
-    const workbook_rel_visitor::SHEETS & rels = wb_rel_visitor.sheet_file_rid_map();
-
-    // setup sheet table
-    std::string sheet_name;
-    for (auto it : rels) {
-        auto sheet = sheets.find(it.second);
-        if (sheet != sheets.end()) {
-            sheet_name = sheet->second;
-        } else {
-            sheet_name = "";
-        }
-        partname_to_sheetname_[std::string("xl/") + it.first] = sheet_name;
-    }
 
     ozs.reset(load_ostream(visitors.getname()));
     // visit all part
     std::vector<path> files = izs_->files();
-    int visit_type = workstream_visitor_group::default_type;
     for (auto part : files) {
-        auto part_string = part.string();
-        auto visit_name = part_string;
-        auto type = get_part_type(part_string);
-        if (part_type_sheet == type) {
-            visit_type = workstream_visitor_group::worksheet;
-            visit_name = partname_to_sheetname_[part_string];
+        auto filename = part.string();
+        relationship_type type;
+        std::string r_id;
+        const void * data = nullptr;
+        if (!wb_rel_visitor.get_file_relationship(filename, r_id, type)) {
+            type = relationship_type::unknown;
         }
-        workstream_visitor * visitor = visitors.get_visitor(visit_type);
+        if (relationship_type::worksheet == type) {
+            auto it = sheets.find(r_id);
+            if (it != sheets.end()) {
+                data = &it->second;
+            }
+        }
+        workstream_visitor * visitor = visitors.get_visitor(type);
         if (visitor) {
             visitor->init_path_stack(stack_);
-            visitor->before_visit(visit_name);
-            visit_part(part_string, ozs, *visitor);
-            visitor->after_visit(visit_name);
+            visitor->before_visit(filename, data);
+            visit_part(filename, ozs, *visitor);
+            visitor->after_visit(filename);
         }
     }
     return (0);

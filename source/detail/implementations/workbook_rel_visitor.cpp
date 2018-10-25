@@ -1,13 +1,11 @@
 
+#include <detail/serialization/custom_value_traits.hpp>
 #include <detail/implementations/workbook_rel_visitor.hpp>
 #include <xlnt/workstream/workstream_path_stack.hpp>
 #include <xlnt/debug/debug.hpp>
 
 namespace xlnt {
 namespace detail {
-
-#define WORKSHEET_TYPE \
-    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
 
 workstream_visitor::visit_actions workbook_rel_visitor::start_element(
                     const std::string & element UNUSED, std::string & newval UNUSED)
@@ -18,9 +16,11 @@ workstream_visitor::visit_actions workbook_rel_visitor::start_element(
 void workbook_rel_visitor::end_element()
 {
     const workstream_path_stack & stack = get_path_stack();
-    if (stack == "Relationships/Relationship" &&
-        rel_type_ == WORKSHEET_TYPE) {
-        sheet_file_to_rid_[file_name_] = rid_;
+    if (stack == "Relationships/Relationship") {
+        rels_[rel_.file_name] = rel_;
+        rel_.file_name = "";
+        rel_.r_id = "";
+        rel_.r_type = relationship_type::unknown;
     }
 }
 
@@ -35,19 +35,26 @@ workstream_visitor::visit_actions workbook_rel_visitor::character(
 {
     const workstream_path_stack & stack = get_path_stack();
     if (stack == "Relationships/Relationship/Target") {
-        file_name_ = value;
+        rel_.file_name = std::string("xl/") + value;
     } else if (stack == "Relationships/Relationship/Id") {
-        rid_ = value;
+        rel_.r_id = value;
     } else if (stack == "Relationships/Relationship/Type") {
-        rel_type_ = value;
+        rel_.r_type = from_string<relationship_type>(value);
     }
     newval = "";
     return (SKIP);
 }
 
-const workbook_rel_visitor::SHEETS & workbook_rel_visitor::sheet_file_rid_map() const
+bool  workbook_rel_visitor::get_file_relationship(const std::string filename,
+                                    std::string & r_id, relationship_type & type) const
 {
-    return (sheet_file_to_rid_);
+    FILE_RELS::const_iterator it = rels_.find(filename);
+    if (it == rels_.end()) {
+        return (false);
+    }
+    r_id = it->second.r_id;
+    type = it->second.r_type;
+    return (true);
 }
 
 workstream_visitor::visit_actions workbook_rel_visitor::start_ns(
