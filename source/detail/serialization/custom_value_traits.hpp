@@ -138,7 +138,8 @@ relationship_type from_string(const std::string &string)
         return relationship_type::dialogsheet;
     else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing")
         return relationship_type::drawings;
-    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLinkPath")
+    else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLinkPath" ||
+             string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLink")
         return relationship_type::external_workbook_references;
     else if (string == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotTable")
         return relationship_type::pivot_table;

@@ -38,11 +38,13 @@ int workstream_impl::visit(workstream_visitor_group & visitors)
 
     // do visit
     workbook_visitor    wb_visitor;
+    wb_visitor.init_path_stack(stack_);
     visit_part("xl/workbook.xml", ozs, wb_visitor);
     const workbook_visitor::SHEETS & sheets = wb_visitor.sheet_rid_name_map();
 
     // do visit
     workbook_rel_visitor    wb_rel_visitor;
+    wb_rel_visitor.init_path_stack(stack_);
     visit_part("xl/_rels/workbook.xml.rels", ozs, wb_rel_visitor);
     const workbook_rel_visitor::SHEETS & rels = wb_rel_visitor.sheet_file_rid_map();
 
@@ -72,6 +74,7 @@ int workstream_impl::visit(workstream_visitor_group & visitors)
         }
         workstream_visitor * visitor = visitors.get_visitor(visit_type);
         if (visitor) {
+            visitor->init_path_stack(stack_);
             visitor->before_visit(visit_name);
             visit_part(part_string, ozs, *visitor);
             visitor->after_visit(visit_name);
@@ -136,6 +139,7 @@ void workstream_impl::visit_part(const std::string & partname, std::unique_ptr<o
         switch  (e) {
             case xml::parser::start_element:
             {
+                stack_.push(p.qname().name());
                 workstream_visitor::visit_actions act = visitor.start_element(p.qname().name(), newval);
                 if (workstream_visitor::WRITE == act) {
                     s.start_element(p.qname());
@@ -156,10 +160,12 @@ void workstream_impl::visit_part(const std::string & partname, std::unique_ptr<o
                     s.end_element();
                 }
                 visitor.end_element();
+                stack_.pop();
                 break;
             }
             case xml::parser::start_attribute:
             {
+                stack_.push(p.qname().name());
                 workstream_visitor::visit_actions act = visitor.start_attribute(p.qname().name(), newval);
                 if (skip_element_) {
                     break;
@@ -184,6 +190,7 @@ void workstream_impl::visit_part(const std::string & partname, std::unique_ptr<o
                     s.end_attribute();
                 }
                 visitor.end_attribute();
+                stack_.pop();
                 break;
             }
             case xml::parser::characters:

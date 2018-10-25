@@ -223,15 +223,7 @@ class sheet_visitor : public xlnt::workstream_visitor {
     const config_map & _conf;
     const config_map::COL_MAP * _col;
 
-    // element
-    bool    _start_sheetdata;
-    bool    _start_row;
-    bool    _start_cell;
-    bool    _start_value;
-    int     _skip_element;
-
     // cell attr
-    bool    _start_cell_ref;
     std::string _cell_ref;
     bool    _cell_is_number;
 
@@ -245,9 +237,7 @@ class sheet_visitor : public xlnt::workstream_visitor {
     const std::string * _write_buf;
 public:
     sheet_visitor(const config_map & conf):_conf(conf), _col(NULL),
-        _start_sheetdata(false),_start_row(false),_start_cell(false),
-        _start_value(false),_skip_element(0),
-        _start_cell_ref(false),_cell_is_number(true),_op(_op_non),
+        _cell_is_number(true),_op(_op_non),
         _read_buf(NULL), _write_buf(NULL) {
         const config_map::SHEET_MAP & sheet_map = _conf.get();
         config_map::SHEET_MAP::const_iterator sheet_it = sheet_map.begin();
@@ -292,82 +282,55 @@ public:
             return (WRITE);
         }
 
-        if (!_start_sheetdata && element == "sheetData") {
-            _start_sheetdata = true;
-        } else if (_start_sheetdata && element == "row" && !_start_row) {
-            _start_row = true;
-        } else if (_start_row && element == "c" && !_start_cell) {
-            _start_cell = true;
-        } else if (_start_cell && element == "v" && !_start_value) {
-            _start_value = true;
-            _op = _op_non;
-            if (_cell_is_number) {
-                std::pair<std::string, xlnt::row_t> ref = xlnt::cell_reference::split_reference(_cell_ref);
-                const std::string & col = ref.first;
-                // check this col is in config col
-                config_map::COL_MAP::const_iterator col_it = _col->find(col);
-                if ( col_it != _col->end()) {
-                    const std::string & col_to = col_it->second;
-                    if (col_to == config_map::ZERO) {
-                        _op = _op_write;
-                        _write_buf = &_buf[col_to];
-                    } else {
-                        _op = _op_read; // get value
-                        _read_buf = &_buf[col_to];
-                    }
-                } else {
-                    // check this col is in buf map
-                    col_it = _buf.find(col);
-                    if ( col_it != _buf.end()) {
-                        _op = _op_write;
-                        _write_buf = &(col_it->second);
-                    }
-                }
-            }
+        const xlnt::workstream_path_stack & stack = get_path_stack();
+        if (stack == "sheetData/row/c") {
+            _cell_is_number = true;
+            return (WRITE);
+        }
+        if (stack != "sheetData/row/c/v") {
+            return (WRITE);
+        }
 
-            //debug
-            if (_op != _op_non) {
-                std::cout << _cell_ref << ":[";
-                if (_op == _op_read) {
-                    std::cout << "read";
+        _op = _op_non;
+        //std::cout << "cell(" << _cell_ref << "):" << _cell_is_number << std::endl;
+        if (_cell_is_number) {
+            std::pair<std::string, xlnt::row_t> ref = xlnt::cell_reference::split_reference(_cell_ref);
+            const std::string & col = ref.first;
+            // check this col is in config col
+            config_map::COL_MAP::const_iterator col_it = _col->find(col);
+            if ( col_it != _col->end()) {
+                const std::string & col_to = col_it->second;
+                if (col_to == config_map::ZERO) {
+                    _op = _op_write;
+                    _write_buf = &_buf[col_to];
                 } else {
-                    std::cout << "write:" << *_write_buf;
+                    _op = _op_read; // get value
+                    _read_buf = &_buf[col_to];
                 }
-                std::cout << "]" << std::endl;
+            } else {
+                // check this col is in buf map
+                col_it = _buf.find(col);
+                if ( col_it != _buf.end()) {
+                    _op = _op_write;
+                    _write_buf = &(col_it->second);
+                }
             }
-        } else {
-            if (_start_sheetdata) {
-                _skip_element++;
+        }
+
+        //debug
+        if (_op != _op_non) {
+            std::cout << _cell_ref << ":[";
+            if (_op == _op_read) {
+                std::cout << "read";
+            } else {
+                std::cout << "write:" << *_write_buf;
             }
+            std::cout << "]" << std::endl;
         }
         return (WRITE);
     }
     virtual void end_element()
     {
-        if (!_col) {
-            return;
-        }
-        if (_start_sheetdata && _skip_element) {
-            _skip_element--;
-            return;
-        }
-        if (!_start_sheetdata) {
-            return;
-        }
-        if (!_start_row) {
-            _start_sheetdata = false;
-            return;
-        }
-        if (!_start_cell) {
-            _start_row = false;
-            return;
-        }
-        if (!_start_value) {
-            _start_cell = false;
-            _cell_is_number = true;
-            return;
-        }
-        _start_value = false;
         _op = _op_non;
     }
     virtual visit_actions start_attribute(const std::string & attr, std::string & newval)
@@ -375,14 +338,10 @@ public:
         if (!_col) {
             return (WRITE);
         }
-        // get cell attr
-        if (_start_cell && !_start_value && 0==_skip_element) {
-            if (attr == "r") {
-                _start_cell_ref = true;
-            } else if (attr == "t") {
-                // not a number
-                _cell_is_number = false;
-            }
+
+        const xlnt::workstream_path_stack & stack = get_path_stack();
+        if (stack == "sheetData/row/c/t") {
+            _cell_is_number = false;
         }
         return (WRITE);
     }
@@ -391,9 +350,7 @@ public:
         if (!_col) {
             return;
         }
-        if (_start_cell_ref) {
-            _start_cell_ref = false;
-        }
+        // nothing to do
     }
     virtual visit_actions character(const std::string & value, std::string & newval)
     {
@@ -402,14 +359,15 @@ public:
         }
 
         visit_actions act = WRITE;
-        if (_start_value) {
+        const xlnt::workstream_path_stack & stack = get_path_stack();
+        if (stack == "sheetData/row/c/v") {
             if (_op == _op_read) {
                 *_read_buf = value;
             } else if (_op == _op_write) {
                 newval = *_write_buf;
                 act = REPLACE;
             }
-        } else if (_start_cell && _start_cell_ref) {
+        } else if (stack == "sheetData/row/c/r") {
             _cell_ref = value;
         }
         return (act);

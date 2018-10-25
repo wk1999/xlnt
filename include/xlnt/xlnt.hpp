@@ -95,3 +95,4 @@
 #include <xlnt/workstream/workstream.hpp>
 #include <xlnt/workstream/workstream_visitor.hpp>
 #include <xlnt/workstream/workstream_visitor_group.hpp>
+#include <xlnt/workstream/workstream_path_stack.hpp>

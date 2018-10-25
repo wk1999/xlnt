@@ -4,13 +4,20 @@
 */
 
 #pragma once
-
+#if defined(__GNUC__)
+#define UNUSED __attribute__((unused))
+#else
+#define UNUSED
+#endif
 #include <string>
 
 namespace xlnt {
 
+class workstream_path_stack;
+
 class workstream_visitor {
     std::string name_;
+    const workstream_path_stack * ps_;
 public:
     enum visit_actions {
         // write the original value to ostream
@@ -22,23 +29,30 @@ public:
         SKIP,
     };
 public:
-    virtual void before_visit(const std::string & visit_name) {}
-    virtual void after_visit(const std::string & visit_name) {}
-    virtual visit_actions start_element(const std::string & element, std::string & newval)
+    workstream_visitor():ps_(nullptr){}
+    void init_path_stack(const workstream_path_stack & ps) {
+        ps_ = &ps;
+    }
+    const workstream_path_stack & get_path_stack() const {
+        return (*ps_);
+    }
+    virtual void before_visit(const std::string & visit_name UNUSED) {}
+    virtual void after_visit(const std::string & visit_name UNUSED) {}
+    virtual visit_actions start_element(const std::string & element UNUSED, std::string & newval UNUSED)
     {
         return (WRITE);
     }
     virtual void end_element() {}
-    virtual visit_actions start_attribute(const std::string & attr, std::string & newval)
+    virtual visit_actions start_attribute(const std::string & attr UNUSED, std::string & newval UNUSED)
     {
         return (WRITE);
     }
     virtual void end_attribute() {}
-    virtual visit_actions character(const std::string & value, std::string & newval)
+    virtual visit_actions character(const std::string & value UNUSED, std::string & newval UNUSED)
     {
         return (WRITE);
     }
-    virtual visit_actions start_ns(const std::string & ns, std::string & newval)
+    virtual visit_actions start_ns(const std::string & ns UNUSED, std::string & newval UNUSED)
     {
         return (WRITE);
     }

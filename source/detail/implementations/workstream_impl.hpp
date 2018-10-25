@@ -3,6 +3,7 @@
 
 #include <detail/external/include_libstudxml.hpp>
 #include <detail/serialization/zstream.hpp>
+#include <xlnt/workstream/workstream_path_stack.hpp>
 #include <fstream>
 #include <map>
 #include <string>
@@ -18,6 +19,7 @@ class workstream_impl {
     std::unique_ptr<izstream> izs_;
     std::unique_ptr<std::ifstream> ifs_;
     std::unique_ptr<std::ofstream> ofs_;
+    workstream_path_stack   stack_;
 
     std::map<std::string, std::string> partname_to_sheetname_;
 
