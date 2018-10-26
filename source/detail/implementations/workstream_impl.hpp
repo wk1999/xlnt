@@ -47,7 +47,6 @@ private:
     izstream * load_istream(const std::string & filename);
     ozstream * load_ostream(const std::string & filename);
     void visit_part(const std::string & partname, std::unique_ptr<ozstream> & ozs, workstream_visitor & visitor);
-    int get_part_type(const std::string & partname) const;
 };
 
 } //namespace detail

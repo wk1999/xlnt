@@ -19,11 +19,18 @@ private:
     workstream_type_sheet   sheet_;
 
 public:
+    virtual ~workbook_visitor(){}
+
     virtual visit_actions start_element(const std::string & element, std::string & newval);
+
     virtual void end_element();
+
     virtual visit_actions start_attribute(const std::string & attr, std::string & newval);
+
     virtual visit_actions character(const std::string & value, std::string & newval);
-    virtual visit_actions start_ns(const std::string & ns, std::string & newval);
+
+    virtual visit_actions start_ns(const std::string & ns, const std::string & prefix);
+
     const SHEETS & sheets_map() const;
 };
 

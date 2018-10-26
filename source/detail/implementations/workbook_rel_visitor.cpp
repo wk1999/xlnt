@@ -58,7 +58,7 @@ bool  workbook_rel_visitor::get_file_relationship(const std::string filename,
 }
 
 workstream_visitor::visit_actions workbook_rel_visitor::start_ns(
-                    const std::string & ns UNUSED, std::string & newval UNUSED)
+                    const std::string & ns UNUSED, const std::string & prefix UNUSED)
 {
     return (SKIP);
 }

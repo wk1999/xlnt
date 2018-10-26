@@ -238,6 +238,7 @@ class sheet_visitor : public xlnt::workstream_visitor {
     std::string * _read_buf;
     const std::string * _write_buf;
 public:
+    virtual ~sheet_visitor(){}
     sheet_visitor(const config_map & conf):_conf(conf), _col(NULL),
         _cell_is_number(true),_op(_op_non),
         _read_buf(NULL), _write_buf(NULL) {
@@ -391,6 +392,7 @@ class external_visitor : public xlnt::workstream_visitor {
 
 public:
     external_visitor():_i(0){}
+    virtual ~external_visitor(){}
     virtual void before_visit(const std::string & visit_name, const void * data) {
         std::cout << "I am visiting " << visit_name << std::endl;
     }
@@ -444,13 +446,13 @@ public:
         }
         return (WRITE);
     }
-    virtual visit_actions start_ns(const std::string & ns UNUSED, std::string & newval UNUSED)
+    virtual visit_actions start_ns(const std::string & ns UNUSED, const std::string & prefix)
     {
         const xlnt::workstream_path_stack & stack = get_path_stack();
         //const xlnt::workstream_path_stack & parent = stack.parent();
 
         if (stack == "externalLink") {
-            std::cout << "namespace " << _i << ":" << stack.string() << "(" << ns << ")" << std::endl;
+            std::cout << "namespace " << _i << ":" << stack.string() << "(" << ns << ")[" << prefix << "]" << std::endl;
         }
         return (WRITE);
     }
@@ -463,9 +465,11 @@ void stream_test(const std::string & file, const config_map & cmap)
     sheet_visitor   sheet_visitor(cmap);
     xlnt::workstream_visitor_group visitors(file+"_100.xlsx");
     visitors.add_default_visitor(visitor);
-    //visitors.add_visitor(xlnt::relationship_type::worksheet, sheet_visitor);
+    visitors.add_visitor(xlnt::relationship_type::worksheet, sheet_visitor);
     external_visitor ex_visitor;
-    visitors.add_visitor(xlnt::relationship_type::external_workbook_references,ex_visitor);
+    //visitors.add_visitor(xlnt::relationship_type::external_workbook_references,ex_visitor);
+    visitors.add_visitor("xl/externalLinks/externalLink1.xml", ex_visitor);
+    visitors.add_visitor("xl/workbook.xml", ex_visitor);
     xlnt::workstream  ws;
     int result;
     result = ws.load(file);

@@ -50,7 +50,7 @@ const workbook_visitor::SHEETS & workbook_visitor::sheets_map() const
 }
 
 workstream_visitor::visit_actions workbook_visitor::start_ns(
-                    const std::string & ns UNUSED, std::string & newval UNUSED)
+                    const std::string & ns UNUSED, const std::string & prefix UNUSED)
 {
     return (SKIP);
 }

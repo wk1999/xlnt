@@ -64,7 +64,7 @@ int workstream_impl::visit(workstream_visitor_group & visitors)
                 data = &it->second;
             }
         }
-        workstream_visitor * visitor = visitors.get_visitor(type);
+        workstream_visitor * visitor = visitors.get_visitor(filename,type);
         if (visitor) {
             visitor->init_path_stack(stack_);
             visitor->before_visit(filename, data);
@@ -136,7 +136,8 @@ void workstream_impl::visit_part(const std::string & partname, std::unique_ptr<o
                 if (workstream_visitor::WRITE == act) {
                     s.start_element(p.qname());
                 } else if (workstream_visitor::REPLACE == act) {
-                    s.start_element(p.qname().namespace_(), newval);
+                    xml::qname nqn(p.qname().namespace_(), newval, p.qname().prefix());
+                    s.start_element(nqn);
                 } else if (workstream_visitor::SKIP == act) {
                     skip_element_++;
                 } else {
@@ -165,7 +166,8 @@ void workstream_impl::visit_part(const std::string & partname, std::unique_ptr<o
                 if (workstream_visitor::WRITE == act) {
                     s.start_attribute(p.qname());
                 } else if (workstream_visitor::REPLACE == act) {
-                    s.start_attribute(p.qname().namespace_(), newval);
+                    xml::qname nqn(p.qname().namespace_(), newval, p.qname().prefix());
+                    s.start_attribute(nqn);
                 } else if (workstream_visitor::SKIP == act) {
                     skip_attribute_++;
                 } else {
@@ -202,11 +204,9 @@ void workstream_impl::visit_part(const std::string & partname, std::unique_ptr<o
             }
             case xml::parser::start_namespace_decl:
             {
-                workstream_visitor::visit_actions act = visitor.start_ns(p.namespace_ (), newval);
+                workstream_visitor::visit_actions act = visitor.start_ns(p.namespace_(), p.prefix ());
                 if (workstream_visitor::WRITE == act) {
-                    s.namespace_decl (p.namespace_ (), p.prefix ());
-                } else if (workstream_visitor::REPLACE == act) {
-                    s.namespace_decl (newval, p.prefix ());
+                    s.namespace_decl (p.namespace_(), p.prefix ());
                 } else if (workstream_visitor::SKIP == act) {
                 } else {
                     throw xlnt::exception("invalid visitor actions");
@@ -223,17 +223,6 @@ void workstream_impl::visit_part(const std::string & partname, std::unique_ptr<o
                 throw xlnt::exception("invalid parser event");
             }
         }
-    }
-}
-
-int workstream_impl::get_part_type(const std::string & partname) const
-{
-    auto it = partname_to_sheetname_.find(partname);
-
-    if (it == partname_to_sheetname_.end()) {
-        return (part_type_other);
-    } else {
-        return (part_type_sheet);
     }
 }
 
