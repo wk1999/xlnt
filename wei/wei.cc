@@ -1,6 +1,8 @@
 
 #include <xlnt/xlnt.hpp>
 #include <iostream>
+#include <fstream>
+#include <ostream>
 #include <time.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -91,6 +93,17 @@ public:
     }
 };
 
+void trim(string &s)
+{
+
+    if( !s.empty() )
+    {
+        s.erase(0,s.find_first_not_of(" "));
+        s.erase(s.find_last_not_of(" ") + 1);
+    }
+
+}
+
 class config_map
 {
 public:
@@ -109,7 +122,7 @@ private:
     COL_MAP   col_map; //tmp for every sheet
 
 public:
-    config_map() {
+    void init() {
         col_map["F"] = "J";
         col_map["K"] = ZERO;
         col_map["AG"] = "AH";
@@ -216,6 +229,80 @@ public:
         col_map["AH"] = "AL";
         col_map["AM"] = ZERO;
         sheet_map["LOGO Signing (ENT non-KAP)"] = col_map;
+    }
+
+    bool init(const std::string & cfg) {
+        std::ifstream  infile;
+        infile.open(cfg.data());
+        if (!infile.is_open()) {
+            return (false);
+        }
+
+        std::string s;
+        std::string sheet;
+        int line = 0;
+        while (getline(infile, s)) {
+            line++;
+            size_t pos = s.find('[');
+            if (std::string::npos != pos) {
+                size_t rpos = s.find(']');
+                if (std::string::npos == pos) {
+                    std::cout << cfg << ", line " << line << " not found right ']', error";
+                    return (1);
+                }
+                // save last sheet
+                if (!sheet.empty()) {
+                    sheet_map[sheet] = col_map;
+                }
+                // prepare for next sheet
+                col_map.clear();
+                sheet = s.substr(pos+1, rpos-1);
+                continue;
+            }
+            pos = s.find('>');
+            if (std::string::npos != pos) {
+                std::string left = s.substr(0, pos-1);
+                std::string right = s.substr(pos+1);
+                trim(left);
+                trim(right);
+                col_map[left] = right;
+                continue;
+            }
+            pos = s.find('=');
+            if (std::string::npos != pos) {
+                std::string left = s.substr(0, pos-1);
+                std::string right = s.substr(pos+1);
+                trim(left);
+                trim(right);
+                if ("0" != right) {
+                    std::cout << cfg << ", line " << line << " only =0 supported, error";
+                }
+                col_map[left] = ZERO;
+                continue;
+            }
+        }
+
+        // save latest sheet
+        if (!sheet.empty()) {
+            sheet_map[sheet] = col_map;
+        }
+
+        return (true);
+    }
+
+    void dump(std::ostream & os = std::cout) const {
+        SHEET_MAP::const_iterator it = sheet_map.begin();
+        SHEET_MAP::const_iterator it_end = sheet_map.end();
+
+        for (; it != it_end; ++it) {
+            os << "sheet:[" << it->first << "]" << std::endl;
+            COL_MAP::const_iterator it_col = it->second.begin();
+            COL_MAP::const_iterator it_col_end = it->second.end();
+            for (; it_col != it_col_end; ++it_col) {
+                os << "[" << it_col->first << "] -> [" << it_col->second << "]" << std::endl;
+            }
+            os << std::endl;
+        }
     }
 };
 
@@ -330,6 +417,7 @@ public:
             }
         }
 
+#if 0
         //debug
         if (_op != _op_non) {
             std::cout << _cell_ref << ":[";
@@ -340,6 +428,7 @@ public:
             }
             std::cout << "]" << std::endl;
         }
+#endif
         return (WRITE);
     }
     virtual void end_element()
@@ -466,10 +555,12 @@ void stream_test(const std::string & file, const config_map & cmap)
     xlnt::workstream_visitor_group visitors(file+"_100.xlsx");
     visitors.add_default_visitor(visitor);
     visitors.add_visitor(xlnt::relationship_type::worksheet, sheet_visitor);
+#if 0
     external_visitor ex_visitor;
     //visitors.add_visitor(xlnt::relationship_type::external_workbook_references,ex_visitor);
     visitors.add_visitor("xl/externalLinks/externalLink1.xml", ex_visitor);
     visitors.add_visitor("xl/workbook.xml", ex_visitor);
+#endif
     xlnt::workstream  ws;
     int result;
     result = ws.load(file);
@@ -533,24 +624,27 @@ void workbook_test(const std::string & xlsx, const config_map & cmap)
 
 #define STREAM_TEST
 //#define WORKBOOK_TEST
+#define CFG_FILE "map_cfg"
 
 int main(int argc, char** argv)
 {
     std::string xlsx;
+    bool  cfg_found = false;
+    std::size_t i = 0;
+    std::string exe_path;
+    char * me = argv[0];
+    char * slash = strrchr(me, '/');
+    if (slash) {
+        *slash = 0;
+        exe_path = me;
+    } else {
+        exe_path = ".";
+    }
 
     if (1 == argc) {
-        std::size_t i = 0;
-        std::string exe_path;
-        char * me = argv[0];
-        char * slash = strrchr(me, '/');
-        if (slash) {
-            *slash = 0;
-            exe_path = me;
-        } else {
-            exe_path = ".";
-        }
         std::vector<std::string> files = getFiles(exe_path);
-        for (; i < files.size(); i++) {
+        // get excel file
+        for (i = 0; i < files.size(); i++) {
             const char * ext = strrchr(files[i].c_str(), '.');
             if (ext) {
                 ext++;
@@ -571,8 +665,36 @@ int main(int argc, char** argv)
         return (1);
     }
 
-    time_t  start, end;
+
+    std::vector<std::string> files = getFiles(exe_path);
+    // get cfg file
+    for (i = 0; i < files.size(); i++) {
+        if (CFG_FILE == files[i]) {
+            cfg_found = true;
+            break;
+        }
+    }
+
     config_map  cmap;
+    if (cfg_found) {
+        std::cout << "config file was found, loading config...";
+        if (cmap.init(exe_path+"/"+CFG_FILE)) {
+            std::cout << "ok" << std::endl;
+        } else {
+            std::cout << "failed" << std::endl;
+            return (1);
+        }
+    } else {
+        std::cout << "config file not found, using default config" << std::endl;
+        cmap.init();
+    }
+
+#if DEBUG_CMAP
+cmap.dump();
+return(0);
+#endif
+
+    time_t  start, end;
 #ifdef STREAM_TEST
     std::cout << "streaming excel file: " << xlsx << std::endl;
     start = time(0);

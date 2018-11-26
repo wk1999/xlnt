@@ -1,0 +1,94 @@
+[TTL SUM]
+F > J
+K = 0
+AG > AH
+AI = 0
+BB > BF
+BG = 0
+AL = 0
+BX > BY
+BZ = 0
+
+[Sheet2]
+I > M
+N = 0
+
+[By Seller]
+J > M
+N = 0
+
+[IS Direct Rev]
+F > J
+K = 0
+AF > AJ
+AK = 0
+
+[IS Signing(LT500K)]
+F > J
+K = 0
+AF > AJ
+AK = 0
+
+[IS Rev (PRC Comm)]
+F > J
+K = 0
+AG > AK
+AL = 0
+
+[IS Signing (PRC Comm) ]
+F > J
+K = 0
+AG > AK
+AL = 0
+
+[IS Brand Format]
+F > G
+H = 0
+AE > AF
+AG = 0
+
+[IS - Brand ]
+F > G
+H = 0
+K > L
+M = 0
+P > Q
+R = 0
+U > V
+W = 0
+Z > AA
+AB = 0
+AE > AF
+AG = 0
+AJ > AK
+AL = 0
+AO > AP
+AQ = 0
+AT > AU
+AV = 0
+AY > AZ
+BA = 0
+
+[TSS Rev (Comm)]
+F > J
+K = 0
+AG > AK
+AL = 0
+
+[TSS Signing (Comm)]
+F > J
+K = 0
+AG > AK
+AL = 0
+
+[LOGO Rev (ENT non-KAP)]
+F > J
+K = 0
+AG > AK
+AL = 0
+
+[LOGO Signing (ENT non-KAP)]
+G > K
+L = 0
+AH > AL
+AM = 0
